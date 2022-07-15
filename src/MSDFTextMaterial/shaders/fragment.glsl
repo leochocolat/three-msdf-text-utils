@@ -20,5 +20,5 @@ void main() {
 
     // Outputs
     #include <three_msdf_common_output>
-    #include <three_msdf_strokes_output>
+    // #include <three_msdf_strokes_output>
 }

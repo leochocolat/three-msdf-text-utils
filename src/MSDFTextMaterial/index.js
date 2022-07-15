@@ -1,5 +1,5 @@
 // Vendor
-import { ShaderMaterial, FrontSide, Color, ShaderChunk } from 'three';
+import { ShaderMaterial, FrontSide, ShaderChunk } from 'three';
 
 // Uniforms
 import uniforms from './uniforms';

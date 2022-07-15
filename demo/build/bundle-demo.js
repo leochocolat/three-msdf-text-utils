@@ -3639,7 +3639,7 @@
 
   var vertexShader = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float line;attribute float letter;attribute float lineLetters;attribute float lineLettersTotal;varying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLetterIndex;varying float vLineLetterIndex;varying float vLineLettersTotal;void main(){vec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=line;vLetterIndex=letter;vLineLetterIndex=lineLetters;vLineLettersTotal=lineLettersTotal;}"; // eslint-disable-line
 
-  var fragmentShader = "#define GLSLIFY 1\nvarying vec2 vUv;\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\n#include <three_msdf_strokes_output>\n}"; // eslint-disable-line
+  var fragmentShader = "#define GLSLIFY 1\nvarying vec2 vUv;\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\n}"; // eslint-disable-line
 
   var median = "#define GLSLIFY 1\nfloat median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}"; // eslint-disable-line
 
@@ -3709,70 +3709,104 @@
     return _createClass(MSDFTextMaterial);
   }(ShaderMaterial);
 
-  var canvas, renderer, scene, camera, controls;
-  setup();
-  setupText();
-  update();
+  var Basic = /*#__PURE__*/function () {
+    function Basic() {
+      _classCallCheck(this, Basic);
 
-  function setup() {
-    canvas = document.querySelector('.js-canvas');
-    camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-    camera.position.z = 1000;
-    scene = new Scene();
-    renderer = new WebGLRenderer({
-      canvas: canvas,
-      antialias: true
-    });
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    controls = new OrbitControls(camera, renderer.domElement);
-    controls.target.set(0, 0, 0);
-    controls.update();
-  }
+      this.canvas = document.querySelector('.js-canvas');
+      this.renderer = null;
+      this.scene = null;
+      this.camera = null;
+      this.controls = null;
+    }
 
-  function setupText() {
-    var promises = [loadFontAtlas('./fonts/roboto/roboto-regular.png'), loadFont('./fonts/roboto/roboto-regular.fnt')];
-    Promise.all(promises).then(function (_ref) {
-      var _ref2 = _slicedToArray(_ref, 2),
-          atlas = _ref2[0],
-          font = _ref2[1];
+    _createClass(Basic, [{
+      key: "start",
+      value: function start() {
+        this.setup();
+        this.setupText();
+        this.update();
+      }
+    }, {
+      key: "setup",
+      value: function setup() {
+        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera.position.z = 1000;
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({
+          canvas: this.canvas,
+          antialias: true
+        });
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }, {
+      key: "setupText",
+      value: function setupText() {
+        var _this = this;
 
-      var geometry = new MSDFTextGeometry({
-        text: 'Hello World',
-        font: font.data
-      });
-      var material = new MSDFTextMaterial();
-      material.uniforms.uMap.value = atlas;
-      material.side = DoubleSide;
-      var mesh = new Mesh(geometry, material);
-      mesh.rotation.x = Math.PI;
-      scene.add(mesh);
-    });
-  }
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        Promise.all(promises).then(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+              atlas = _ref2[0],
+              font = _ref2[1];
 
-  function loadFontAtlas(path) {
-    var promise = new Promise(function (resolve, reject) {
-      var loader = new TextureLoader();
-      loader.load(path, resolve);
-    });
-    return promise;
-  }
+          var geometry = new MSDFTextGeometry({
+            text: 'Hello World',
+            font: font.data
+          });
+          var material = new MSDFTextMaterial();
+          material.uniforms.uMap.value = atlas;
+          material.side = DoubleSide;
+          var mesh = new Mesh(geometry, material);
+          mesh.rotation.x = Math.PI;
 
-  function loadFont(path) {
-    var promise = new Promise(function (resolve, reject) {
-      var loader = new FontLoader();
-      loader.load(path, resolve);
-    });
-    return promise;
-  }
+          _this.scene.add(mesh);
+        });
+      }
+    }, {
+      key: "loadFontAtlas",
+      value: function loadFontAtlas(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new TextureLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "loadFont",
+      value: function loadFont(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new FontLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        this.render();
+        requestAnimationFrame(this.update.bind(this));
+      }
+    }]);
 
-  function render() {
-    renderer.render(scene, camera);
-  }
+    return Basic;
+  }();
 
-  function update() {
-    render();
-    requestAnimationFrame(update);
-  }
+  var scenes = {
+    basic: Basic
+  };
+
+  var demoName = document.querySelector('.js-canvas').dataset.demoName;
+  var scene = new scenes[demoName]();
+  scene.start();
 
 }));
