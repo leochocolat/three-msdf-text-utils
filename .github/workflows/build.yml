@@ -1,0 +1,60 @@
+name: 💚 Build
+
+on:
+    push:
+        branches: [main]
+
+    workflow_dispatch:
+
+jobs:
+    Build:
+        runs-on: ubuntu-latest
+
+        steps:
+            # CHECKOUT
+            - name: 🔖 Checkout
+              uses: actions/checkout@v2
+              with:
+                  persist-credentials: false
+                  fetch-depth: 0
+
+            # PREPARE BUILD
+            - name: 🔧 Use Node.js
+              uses: actions/setup-node@v1
+              with:
+                  node-version: "12.x"
+
+            - name: ♻️ Cache Node.js modules
+              uses: actions/cache@v2
+              with:
+                  # npm cache files are stored in `~/.npm` on Linux/macOS
+                  path: ~/.npm
+                  key: ${{ runner.OS }}-node-${{ hashFiles('**/package-lock.json') }}
+                  restore-keys: |
+                      ${{ runner.OS }}-node-
+                      ${{ runner.OS }}-
+
+            - name: 🔧 Configure github
+              run: |
+                  git config --local user.email "gobelins.axis.development@gmail.com"
+                  git config --local user.name "gobelins-axis-development"
+                  git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com/
+
+            - name: 📦 Install dependencies
+              run: npm ci
+
+            # BUILD
+            - name: 💚 Build lib
+              run: npm run build
+
+            # COMMIT & PUSH
+            - name: 🚀 Commit build
+              run: |
+                  git add --force build
+                  git commit -m ":green_heart: Build"
+
+            - name: 🚀 Push build
+              uses: ad-m/github-push-action@master
+              with:
+                  github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+                  branch: main
