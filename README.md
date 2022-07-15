@@ -13,6 +13,11 @@ It includes :
 - Check compatibility with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
 - More to come...
 
+## Demo
+
+- [Basic](https://leochocolat.github.io/three-msdf-text/demo/)
+- More to come...
+
 ## Installation
 
 ```bash
