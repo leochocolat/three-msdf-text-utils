@@ -20,7 +20,8 @@ function setup() {
 
     scene = new Scene();
 
-    renderer = new WebGLRenderer({ canvas });
+    renderer = new WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     controls = new OrbitControls(camera, renderer.domElement);

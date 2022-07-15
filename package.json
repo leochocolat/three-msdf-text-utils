@@ -43,7 +43,6 @@
   },
   "dependencies": {
     "quad-indices": "^2.0.1",
-    "three": "^0.142.0",
     "word-wrapper": "^1.0.7"
   }
 }

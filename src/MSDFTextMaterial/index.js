@@ -1,9 +1,20 @@
 // Vendor
-import { ShaderMaterial, FrontSide, Color } from 'three';
+import { ShaderMaterial, FrontSide, Color, ShaderChunk } from 'three';
+
+// Uniforms
+import uniforms from './uniforms';
 
 // Shaders
 import vertexShader from './shaders/vertex.glsl';
 import fragmentShader from './shaders/fragment.glsl';
+
+// Shunks
+import shaderChunks from './shaderChunks';
+
+// Add chunks
+for (const key in shaderChunks) {
+    ShaderChunk[key] = shaderChunks[key];
+}
 
 const defaultOptions = {
     side: FrontSide,
@@ -15,14 +26,12 @@ const defaultOptions = {
         derivatives: true,
     },
     uniforms: {
-        uOpacity: { value: 1 },
-        uColor: { value: new Color('#ffffff') },
-        uMap: { value: null },
-        uThreshold: { value: 0 },
-        uAlphaTest: { value: 0 },
-        uOutlineColor: { value: new Color('#ffffff') },
-        uOutlineOutsetWidth: { value: 0 },
-        uOutlineInsetWidth: { value: 0 },
+        // Common
+        ...uniforms.common,
+        // Rendering
+        ...uniforms.rendering,
+        // Strokes
+        ...uniforms.strokes,
     },
     vertexShader,
     fragmentShader,
