@@ -84,5 +84,8 @@ npm run dev
 
 ## Roadmap
 
+- Better dependencies management
 - Add shader chunks
 - More documentation
+- More examples
+- Manage versions
