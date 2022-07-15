@@ -2,14 +2,22 @@
   "name": "three-msdf-text",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/bundle.js",
   "scripts": {
     "dev": "rollup --config ./rollup.dev.config.js --watch",
     "build": "rollup --config ./rollup.build.config.js",
     "help": "rollup --help"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leochocolat/three-msdf-text.git"
+  },
   "author": "",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/leochocolat/three-msdf-text/issues"
+  },
+  "homepage": "https://github.com/leochocolat/three-msdf-text#readme",
   "devDependencies": {
     "@babel/core": "^7.18.6",
     "@babel/eslint-parser": "^7.18.2",
