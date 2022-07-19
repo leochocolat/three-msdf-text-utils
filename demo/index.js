@@ -1,6 +1,6 @@
 import scenes from './scenes';
 
-const { demoName } = document.querySelector('.js-canvas').dataset;
-
-const scene = new scenes[demoName]();
+const urlParams = new URLSearchParams(location.search);
+const demoName = urlParams.get('demo');
+const scene = scenes[demoName] ? new scenes[demoName]() : new scenes.basic();
 scene.start();

@@ -15,7 +15,9 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 
 ## Demo
 
--   [Basic](https://leochocolat.github.io/three-msdf-text/demo/)
+-   [Basic](https://leochocolat.github.io/three-msdf-text/demo/?demo=basic)
+-   [Stroke](https://leochocolat.github.io/three-msdf-text/demo/?demo=stroke)
+-   [Editor](https://leochocolat.github.io/three-msdf-text/demo/?demo=editor)
 -   More to come...
 
 ## Installation

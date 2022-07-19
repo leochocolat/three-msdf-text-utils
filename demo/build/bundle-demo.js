@@ -12148,7 +12148,7 @@
       this.camera = null;
       this.controls = null;
       this.debugger = new tweakpane.exports.Pane({
-        title: 'Stroke Example'
+        title: "".concat(config$2.name, " Example")
       });
     }
 
@@ -12198,7 +12198,7 @@
           material.side = DoubleSide;
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
-          var scale = 2;
+          var scale = 3;
           mesh.position.x = -geometry.layout.width / 2 * scale;
           mesh.scale.set(scale, scale, scale);
 
@@ -12597,7 +12597,7 @@
           material.uniforms.uStrokeColor.value.set(config.settings.strokeColor);
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
-          var scale = 2;
+          var scale = 3;
           mesh.position.x = -geometry.layout.width / 2 * scale;
           mesh.scale.set(scale, scale, scale);
 
@@ -12687,8 +12687,9 @@
     editor: Editor
   };
 
-  var demoName = document.querySelector('.js-canvas').dataset.demoName;
-  var scene = new scenes[demoName]();
+  var urlParams = new URLSearchParams(location.search);
+  var demoName = urlParams.get('demo');
+  var scene = scenes[demoName] ? new scenes[demoName]() : new scenes.basic();
   scene.start();
 
 }));

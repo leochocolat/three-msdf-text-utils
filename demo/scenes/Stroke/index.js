@@ -90,7 +90,7 @@ export default class Stroke {
 
             const mesh = new Mesh(geometry, material);
             mesh.rotation.x = Math.PI;
-            const scale = 2;
+            const scale = 3;
             mesh.position.x = -geometry.layout.width / 2 * scale;
             mesh.scale.set(scale, scale, scale);
             this.scene.add(mesh);
