@@ -15,7 +15,7 @@ class TextLayout {
     constructor(options = {}) {
         this.glyphs = [];
         this._measure = this.computeMetrics.bind(this);
-        this.update(options);    
+        this.update(options);
     }
 
     /**
@@ -60,7 +60,7 @@ class TextLayout {
     get lettersTotal() {
         return this._lettersTotal;
     }
-    
+
     update(options) {
         options = Object.assign({ measure: this._measure }, options);
 
@@ -120,7 +120,7 @@ class TextLayout {
             for (let i = start; i < end; i++) {
                 const id = text.charCodeAt(i);
                 const glyph = this.getGlyph(font, id);
-                
+
                 if (glyph) {
                     if (lastGlyph) {
                         x += getKerning(font, lastGlyph.id, glyph.id);
@@ -128,7 +128,7 @@ class TextLayout {
 
                     let tx = x;
                     if (align === ALIGN_CENTER) {
-                        tx += (maxLineWidth - lineWidth) / 2; 
+                        tx += (maxLineWidth - lineWidth) / 2;
                     } else if (align === ALIGN_RIGHT) {
                         tx += (maxLineWidth - lineWidth);
                     }
@@ -173,7 +173,7 @@ class TextLayout {
         }
 
         return null;
-    };
+    }
 
     computeMetrics(text, start, end, width) {
         const letterSpacing = this._options.letterSpacing || 0;
@@ -183,7 +183,7 @@ class TextLayout {
         let count = 0;
         let glyph;
         let lastGlyph;
-    
+
         if (!font.chars || font.chars.length === 0) {
             return {
                 start,
@@ -191,26 +191,26 @@ class TextLayout {
                 width: 0,
             };
         }
-    
+
         end = Math.min(text.length, end);
 
         for (let i = start; i < end; i++) {
             const id = text.charCodeAt(i);
             glyph = this.getGlyph(font, id);
-    
+
             if (glyph) {
                 glyph.char = text[i];
                 // move pen forward
                 const xoff = glyph.xoffset;
                 const kern = lastGlyph ? getKerning(font, lastGlyph.id, glyph.id) : 0;
                 curPen += kern;
-    
+
                 const nextPen = curPen + glyph.xadvance + letterSpacing;
                 const nextWidth = curPen + glyph.width;
-    
+
                 // we've hit our limit; we can't move onto the next glyph
                 if (nextWidth >= width || nextPen >= width) { break; }
-    
+
                 // otherwise continue along our line
                 curPen = nextPen;
                 curWidth = nextWidth;
@@ -218,10 +218,10 @@ class TextLayout {
             }
             count++;
         }
-    
+
         // make sure rightmost edge lines up with rendered glyphs
         if (lastGlyph) { curWidth += lastGlyph.xoffset; }
-    
+
         return {
             start,
             end: start + count,
@@ -237,18 +237,18 @@ class TextLayout {
         // ' ' or '\t' glyphs
         this._fallbackSpaceGlyph = null;
         this._fallbackTabGlyph = null;
-    
+
         if (!font.chars || font.chars.length === 0) return;
-    
+
         // try to get space glyph
         // then fall back to the 'm' or 'w' glyphs
         // then fall back to the first glyph available
         const space = getGlyphById(font, SPACE_ID) || getMGlyph(font) || font.chars[0];
-    
+
         // and create a fallback for tab
         const tabWidth = this._options.tabSize * space.xadvance;
         this._fallbackSpaceGlyph = space;
-        const spaceClone = Object.assign({}, space); 
+        const spaceClone = Object.assign({}, space);
         this._fallbackTabGlyph = Object.assign(spaceClone, {
             x: 0,
             y: 0,
@@ -259,12 +259,12 @@ class TextLayout {
             width: 0,
             height: 0,
         });
-    };   
+    }
 }
 
 function createLayout(options) {
     return new TextLayout(options);
-};
+}
 
 function getGlyphById(font, id) {
     if (!font.chars || font.chars.length === 0) { return null; }
@@ -337,7 +337,7 @@ function number(num, def) {
 }
 
 export {
-    createLayout
+    createLayout,
 };
 
 export default TextLayout;

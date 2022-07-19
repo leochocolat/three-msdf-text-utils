@@ -1,5 +1,5 @@
 // Varyings
-varying vec2 vUv;
+#include <three_msdf_varyings>
 
 // Uniforms
 #include <three_msdf_common_uniforms>

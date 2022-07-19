@@ -3829,7 +3829,7 @@
 
   var vertex = "#define GLSLIFY 1\n#include <three_msdf_attributes>\n#include <three_msdf_varyings>\nvoid main(){\n#include <three_msdf_vertex>\n}"; // eslint-disable-line
 
-  var fragment = "#define GLSLIFY 1\nvarying vec2 vUv;\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_strokes_output>\n}"; // eslint-disable-line
+  var fragment = "#define GLSLIFY 1\n#include <three_msdf_varyings>\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_strokes_output>\n}"; // eslint-disable-line
 
   var Stroke = /*#__PURE__*/function () {
     function Stroke() {
