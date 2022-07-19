@@ -3,8 +3,14 @@ import { Scene, WebGLRenderer, PerspectiveCamera, TextureLoader, Mesh, DoubleSid
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
+// Vendor
+import { Pane } from 'tweakpane';
+
 // Lib
 import { MSDFTextGeometry, MSDFTextMaterial } from '../../../src/index';
+
+// Config
+import config from './config';
 
 export default class Basic {
     constructor() {
@@ -13,6 +19,7 @@ export default class Basic {
         this.scene = null;
         this.camera = null;
         this.controls = null;
+        this.debugger = new Pane({ title: 'Stroke Example' });
     }
 
     start() {
@@ -45,9 +52,10 @@ export default class Basic {
 
         Promise.all(promises).then(([atlas, font]) => {
             const geometry = new MSDFTextGeometry({
-                text: 'Hello World',
+                text: config.text,
                 font: font.data,
-                align: 'left',
+                width: 1000,
+                align: 'center',
             });
 
             const material = new MSDFTextMaterial();
@@ -56,7 +64,20 @@ export default class Basic {
 
             const mesh = new Mesh(geometry, material);
             mesh.rotation.x = Math.PI;
+            const scale = 2;
+            mesh.position.x = -geometry.layout.width / 2 * scale;
+            mesh.scale.set(scale, scale, scale);
             this.scene.add(mesh);
+
+            // Debug
+            const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
+            debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+            debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
+
+            const debugFolderRendering = this.debugger.addFolder({ title: 'Rendering' });
+            debugFolderRendering.addInput(material.defines, 'IS_SMALL', { label: 'Is small' }).on('change', () => { material.needsUpdate = true; });
+            debugFolderRendering.addInput(material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
+            debugFolderRendering.addInput(material.uniforms.uThreshold, 'value', { label: 'Threshold (IS_SMALL)', min: 0, max: 1 });
         });
     }
 

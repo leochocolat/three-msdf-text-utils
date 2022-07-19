@@ -2,7 +2,7 @@ html, body {
     margin: 0;
 }
 
-canvas {
+.canvas {
     position: fixed;
     left: 0;
     top: 0;
