@@ -20,6 +20,11 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   [Editor](https://leochocolat.github.io/three-msdf-text/demo/?demo=editor)
 -   More to come...
 
+## Bitmap Font and Font Atlas
+
+To get this working you will need some specific files, you can generate them with (msdf-bmfont-xml)[https://github.com/soimy/msdf-bmfont-xml] or with the (online tool)[https://msdf-bmfont.donmccurdy.com/].
+You can also check my (msdf-font-factory)[https://github.com/leochocolat/msdf-font-factory] it already includes some files that you can use and a script to generate your files easily.
+
 ## Installation
 
 ```bash
