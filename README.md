@@ -107,17 +107,7 @@ Options can be an object, or a String – equivalent to { text: str }.
 -   `layout`
 
 Text Layout instance, you can use it to access layout attributes such as :
-
--   width
--   height
--   descender
--   ascender
--   xHeight
--   baseline
--   capHeight
--   lineHeight
--   linesTotal
--   lettersTotal
+> width, height, descender, ascender, xHeight, baseline, capHeight, lineHeight, linesTotal, lettersTotal
 
 -   `visibleGlyphs`
 
@@ -158,7 +148,7 @@ const defaultOptions = {
         uAlphaTest: { value: 0.01 },
         // Strokes
         uStrokeColor: { value: new Color("#ff0000") },
-        uStrokeOutsetWidth: { value: 0.3 },
+        uStrokeOutsetWidth: { value: 0.0 },
         uStrokeInsetWidth: { value: 0.3 },
     },
     vertexShader,
