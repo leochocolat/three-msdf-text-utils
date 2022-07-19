@@ -2,21 +2,21 @@
 
 Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (multi-channel signed distance fields).
 
-This is heavily based on [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
+Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 
 **It includes :**
 
-- Refacto to ES6
-- Remove some small old dependencies
-- Replace some deprecated three.js code
-- Add more geometry attributes : letter center positions, letters index, line index, letters index by line, word index, Text block UV.
-- Check compatibility with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
-- More to come...
+-   Refacto to ES6
+-   Remove some small old dependencies
+-   Replace some deprecated three.js code
+-   Add more geometry attributes : letter center positions, letters index, line index, letters index by line, word index, Text block UV.
+-   Check compatibility with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
+-   More to come...
 
 ## Demo
 
-- [Basic](https://leochocolat.github.io/three-msdf-text/demo/)
-- More to come...
+-   [Basic](https://leochocolat.github.io/three-msdf-text/demo/)
+-   More to come...
 
 ## Installation
 
@@ -27,14 +27,14 @@ npm install github:leochocolat/three-msdf-text
 ## Usage
 
 ```js
-import { MSDFTextGeometry, MSDFTextMaterial } from 'three-msdf-text';
+import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text";
 
 Promise.all([
-    loadFontAtlas('./fonts/roboto/roboto-regular.png'),
-    loadFont('./fonts/roboto/roboto-regular.fnt'),
+    loadFontAtlas("./fonts/roboto/roboto-regular.png"),
+    loadFont("./fonts/roboto/roboto-regular.fnt"),
 ]).then(([atlas, font]) => {
     const geometry = new MSDFTextGeometry({
-        text: 'Hello World',
+        text: "Hello World",
         font: font.data,
     });
 
@@ -65,12 +65,12 @@ function loadFont(path) {
 
 ## Dependencies
 
-- [quad-indices](https://www.npmjs.com/package/quad-indices)
-- [word-wrapper](https://www.npmjs.com/package/word-wrapper)
+-   [quad-indices](https://www.npmjs.com/package/quad-indices)
+-   [word-wrapper](https://www.npmjs.com/package/word-wrapper)
 
 ### Peer Dependencies
 
-- [three.js](https://www.npmjs.com/package/three)
+-   [three.js](https://www.npmjs.com/package/three)
 
 ## Development
 
@@ -84,8 +84,7 @@ npm run dev
 
 ## Roadmap
 
-- Better dependencies management
-- Add shader chunks
-- More documentation
-- More examples
-- Manage versions
+-   Better dependencies management
+-   More documentation
+-   More examples
+-   Manage versions

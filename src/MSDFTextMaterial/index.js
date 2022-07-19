@@ -37,6 +37,11 @@ const defaultOptions = {
     fragmentShader,
 };
 
+export {
+    uniforms,
+    defaultOptions,
+};
+
 export default class MSDFTextMaterial extends ShaderMaterial {
     constructor(options = {}) {
         options = Object.assign(defaultOptions, options);

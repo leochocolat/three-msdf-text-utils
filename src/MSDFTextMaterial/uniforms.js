@@ -18,7 +18,7 @@ export default {
     // Strokes
     strokes: {
         uStrokeColor: { value: new Color('#ff0000') },
-        uStrokeOutsetWidth: { value: 0.2 },
-        uStrokeInsetWidth: { value: 0.2 },
+        uStrokeOutsetWidth: { value: 0.3 },
+        uStrokeInsetWidth: { value: 0.3 },
     },
 };

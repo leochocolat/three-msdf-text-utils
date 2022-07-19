@@ -1,12 +1,17 @@
 // THREE
-import { Scene, WebGLRenderer, PerspectiveCamera, TextureLoader, Mesh, DoubleSide } from 'three';
+import { Scene, WebGLRenderer, PerspectiveCamera, TextureLoader, Mesh, DoubleSide, ShaderMaterial } from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 // Lib
-import { MSDFTextGeometry, MSDFTextMaterial } from '../../src/index';
+import { MSDFTextGeometry } from '../../../src/index';
+import uniforms from '../../../src/MSDFTextMaterial/uniforms';
 
-export default class Basic {
+// Shaders
+import vertex from './shaders/vertex.glsl';
+import fragment from './shaders/fragment.glsl';
+
+export default class Stroke {
     constructor() {
         this.canvas = document.querySelector('.js-canvas');
         this.renderer = null;
@@ -16,6 +21,7 @@ export default class Basic {
     }
 
     start() {
+        this.setupEventListeners();
         this.setup();
         this.setupText();
         this.update();
@@ -46,14 +52,39 @@ export default class Basic {
             const geometry = new MSDFTextGeometry({
                 text: 'Hello World',
                 font: font.data,
+                width: 1000,
+                align: 'center',
             });
 
-            const material = new MSDFTextMaterial();
+            const material = new ShaderMaterial({
+                side: DoubleSide,
+                transparent: true,
+                defines: {
+                    IS_SMALL: false,
+                },
+                extensions: {
+                    derivatives: true,
+                },
+                uniforms: {
+                    // Common
+                    ...uniforms.common,
+                    // Rendering
+                    ...uniforms.rendering,
+                    // Strokes
+                    ...uniforms.strokes,
+                },
+                vertexShader: vertex,
+                fragmentShader: fragment,
+            });
             material.uniforms.uMap.value = atlas;
             material.side = DoubleSide;
+            material.uniforms.uStrokeColor.value.set('#ffffff');
 
             const mesh = new Mesh(geometry, material);
             mesh.rotation.x = Math.PI;
+            const scale = 3;
+            mesh.position.x = -geometry.layout.width / 2 * scale;
+            mesh.scale.set(scale, scale, scale);
             this.scene.add(mesh);
         });
     }
@@ -84,5 +115,15 @@ export default class Basic {
         this.render();
 
         requestAnimationFrame(this.update.bind(this));
+    }
+
+    setupEventListeners() {
+        window.addEventListener('resize', this.resizeHandler.bind(this));
+    }
+
+    resizeHandler() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 }
