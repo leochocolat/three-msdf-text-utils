@@ -77,6 +77,9 @@ class TextLayout {
         const lines = wordWrap.lines(text, options);
         const minWidth = options.width || 0;
 
+        const wordsTotal = text.split(' ').filter(word => word !== '\n').length;
+        const lettersTotal = text.split('').length;
+
         // clear glyphs
         glyphs.length = 0;
 
@@ -113,8 +116,10 @@ class TextLayout {
             const start = line.start;
             const end = line.end;
             const lineWidth = line.width;
+            let lineLetterIndex = 0;
             const lineLettersTotal = line.end - line.start;
             let lastGlyph;
+            const wordIndex = 0;
 
             // for each glyph in that line...
             for (let i = start; i < end; i++) {
@@ -133,28 +138,39 @@ class TextLayout {
                         tx += (maxLineWidth - lineWidth);
                     }
 
-                    // first line indent
-                    if (this._options.textIndent && lineIndex === 0) {
-                        tx += this._options.textIndent;
-                    }
-
                     glyphs.push({
                         position: [tx, y],
                         data: glyph,
                         index: i,
                         line: lineIndex,
+                        linesTotal: lines.length,
                         lineLettersTotal,
+                        lineLetterIndex,
+                        wordsTotal,
+                        wordIndex,
+                        lettersTotal,
                     });
 
                     // move pen forward
                     x += glyph.xadvance + letterSpacing;
                     lastGlyph = glyph;
+
+                    lineLetterIndex++;
+
+                    // if (glyph.id === SPACE_ID && lastGlyph.id !== SPACE_ID) {
+                    //     wordIndex++;
+                    // }
                 }
             }
 
             // next line down
             y += lineHeight;
             x = 0;
+        });
+
+        // Add more data to glyph
+        glyphs.forEach((glyph, glyphIndex) => {
+            console.log(glyph);
         });
 
         this._lettersTotal = glyphs.length;

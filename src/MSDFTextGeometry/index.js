@@ -55,14 +55,6 @@ export default class MSDFTextGeometry extends BufferGeometry {
         const texWidth = font.common.scaleW;
         const texHeight = font.common.scaleH;
 
-        // Get word index
-        let wordIndex = 0;
-        for (let i = 0; i < this._layout.glyphs.length; i++) {
-            const bitmap = this._layout.glyphs[i].data;
-            this._layout.glyphs[i].wordIndex = wordIndex;
-            if (bitmap.char === ' ') wordIndex++;
-        }
-
         // get visible glyphs
         const glyphs = this._layout.glyphs.filter((glyph) => {
             const bitmap = glyph.data;
@@ -84,11 +76,17 @@ export default class MSDFTextGeometry extends BufferGeometry {
         // update vertex data
         this.setIndex(indices);
 
+        console.log(infos);
+
         this.setAttribute('position', new BufferAttribute(attributes.positions, 2));
         this.setAttribute('center', new BufferAttribute(attributes.centers, 2));
         this.setAttribute('uv', new BufferAttribute(attributes.uvs, 2));
         this.setAttribute('layoutUv', new BufferAttribute(attributes.layoutUvs, 2));
+        this.setAttribute('letter', new BufferAttribute(infos.letters, 1));
         this.setAttribute('word', new BufferAttribute(infos.words, 1));
+        this.setAttribute('line', new BufferAttribute(infos.lines, 1));
+        this.setAttribute('lineLetter', new BufferAttribute(infos.lineLetters, 1));
+        this.setAttribute('lineLettersTotal', new BufferAttribute(infos.lineLettersTotal, 1));
 
         // update multipage data
         if (!options.multipage && 'page' in this.attributes) {

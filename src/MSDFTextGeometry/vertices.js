@@ -112,8 +112,10 @@ function attributes(glyphs, texWidth, texHeight, flipY, layout) {
 }
 
 function infos(glyphs, layout) {
-    const words = new Float32Array(glyphs.length * 4);
     const lines = new Float32Array(glyphs.length * 4);
+    const words = new Float32Array(glyphs.length * 4);
+    const lineWords = new Float32Array(glyphs.length * 4);
+    const lineWordsTotal = new Float32Array(glyphs.length * 4);
     const letters = new Float32Array(glyphs.length * 4);
     const lineLetters = new Float32Array(glyphs.length * 4);
     const lineLettersTotal = new Float32Array(glyphs.length * 4);
@@ -144,6 +146,11 @@ function infos(glyphs, layout) {
         lineLettersTotal[l++] = glyph.lineLettersTotal;
         lineLettersTotal[l++] = glyph.lineLettersTotal;
         lineLettersTotal[l++] = glyph.lineLettersTotal;
+
+        lineWordsTotal[l++] = glyph.lineWordsTotal;
+        lineWordsTotal[l++] = glyph.lineWordsTotal;
+        lineWordsTotal[l++] = glyph.lineWordsTotal;
+        lineWordsTotal[l++] = glyph.lineWordsTotal;
 
         if (previousLineIndex === glyph.line) {
             lineLetterIndex++;
