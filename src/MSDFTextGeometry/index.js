@@ -76,17 +76,25 @@ export default class MSDFTextGeometry extends BufferGeometry {
         // update vertex data
         this.setIndex(indices);
 
-        console.log(infos);
-
         this.setAttribute('position', new BufferAttribute(attributes.positions, 2));
         this.setAttribute('center', new BufferAttribute(attributes.centers, 2));
         this.setAttribute('uv', new BufferAttribute(attributes.uvs, 2));
         this.setAttribute('layoutUv', new BufferAttribute(attributes.layoutUvs, 2));
-        this.setAttribute('letter', new BufferAttribute(infos.letters, 1));
-        this.setAttribute('word', new BufferAttribute(infos.words, 1));
-        this.setAttribute('line', new BufferAttribute(infos.lines, 1));
-        this.setAttribute('lineLetter', new BufferAttribute(infos.lineLetters, 1));
+
+        // this.setAttribute('linesTotal', new BufferAttribute(infos.linesTotal, 1)); // Use uniforms instead
+        this.setAttribute('lineIndex', new BufferAttribute(infos.lineIndex, 1));
+
         this.setAttribute('lineLettersTotal', new BufferAttribute(infos.lineLettersTotal, 1));
+        this.setAttribute('lineLetterIndex', new BufferAttribute(infos.lineLetterIndex, 1));
+
+        this.setAttribute('lineWordsTotal', new BufferAttribute(infos.lineWordsTotal, 1));
+        this.setAttribute('lineWordIndex', new BufferAttribute(infos.lineWordIndex, 1));
+
+        // this.setAttribute('wordsTotal', new BufferAttribute(infos.wordsTotal, 1)); // Use uniforms instead
+        this.setAttribute('wordIndex', new BufferAttribute(infos.wordIndex, 1));
+
+        // this.setAttribute('lettersTotal', new BufferAttribute(infos.lettersTotal, 1)); // Use uniforms instead
+        this.setAttribute('letterIndex', new BufferAttribute(infos.letterIndex, 1));
 
         // update multipage data
         if (!options.multipage && 'page' in this.attributes) {

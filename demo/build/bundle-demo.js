@@ -11228,6 +11228,11 @@
         return this._lettersTotal;
       }
     }, {
+      key: "wordsTotal",
+      get: function get() {
+        return this._wordsTotal;
+      }
+    }, {
       key: "update",
       value: function update(options) {
         var _this = this;
@@ -11253,7 +11258,9 @@
         var wordsTotal = text.split(' ').filter(function (word) {
           return word !== '\n';
         }).length;
-        var lettersTotal = text.split('').length; // clear glyphs
+        var lettersTotal = text.split('').filter(function (char) {
+          return char !== '\n' && char !== ' ';
+        }).length; // clear glyphs
 
         glyphs.length = 0; // get max line width
 
@@ -11279,16 +11286,22 @@
         this._xHeight = getXHeight(font);
         this._capHeight = getCapHeight(font);
         this._lineHeight = lineHeight;
-        this._ascender = lineHeight - descender - this._xHeight; // layout each glyph
+        this._ascender = lineHeight - descender - this._xHeight;
+        var wordIndex = 0;
+        var letterIndex = 0; // layout each glyph
 
         lines.forEach(function (line, lineIndex) {
           var start = line.start;
           var end = line.end;
           var lineWidth = line.width;
+          var lineString = text.slice(start, end);
+          var lineWordsTotal = lineString.split(' ').filter(function (item) {
+            return item !== '';
+          }).length;
+          var lineLettersTotal = text.slice(start, end).split(' ').join('').length;
           var lineLetterIndex = 0;
-          var lineLettersTotal = line.end - line.start;
-          var lastGlyph;
-          var wordIndex = 0; // for each glyph in that line...
+          var lineWordIndex = 0;
+          var lastGlyph; // for each glyph in that line...
 
           for (var i = start; i < end; i++) {
             var id = text.charCodeAt(i);
@@ -11312,32 +11325,43 @@
                 position: [tx, y],
                 data: glyph,
                 index: i,
-                line: lineIndex,
+                // Line
                 linesTotal: lines.length,
+                lineIndex: lineIndex,
                 lineLettersTotal: lineLettersTotal,
                 lineLetterIndex: lineLetterIndex,
+                lineWordsTotal: lineWordsTotal,
+                lineWordIndex: lineWordIndex,
+                // Word
                 wordsTotal: wordsTotal,
                 wordIndex: wordIndex,
-                lettersTotal: lettersTotal
-              }); // move pen forward
+                // Letter
+                lettersTotal: lettersTotal,
+                letterIndex: letterIndex
+              });
+
+              if (glyph.id === SPACE_ID && lastGlyph.id !== SPACE_ID) {
+                lineWordIndex++;
+                wordIndex++;
+              }
+
+              if (glyph.id !== SPACE_ID) {
+                lineLetterIndex++;
+                letterIndex++;
+              } // move pen forward
+
 
               x += glyph.xadvance + letterSpacing;
               lastGlyph = glyph;
-              lineLetterIndex++; // if (glyph.id === SPACE_ID && lastGlyph.id !== SPACE_ID) {
-              //     wordIndex++;
-              // }
             }
           } // next line down
 
 
           y += lineHeight;
           x = 0;
-        }); // Add more data to glyph
-
-        glyphs.forEach(function (glyph, glyphIndex) {
-          console.log(glyph);
         });
-        this._lettersTotal = glyphs.length;
+        this._lettersTotal = lettersTotal;
+        this._wordsTotal = wordsTotal;
         this._linesTotal = lines.length;
       }
     }, {
@@ -11700,63 +11724,92 @@
   }
 
   function infos(glyphs, layout) {
-    var lines = new Float32Array(glyphs.length * 4);
-    var words = new Float32Array(glyphs.length * 4);
-    new Float32Array(glyphs.length * 4);
-    var lineWordsTotal = new Float32Array(glyphs.length * 4);
-    var letters = new Float32Array(glyphs.length * 4);
-    var lineLetters = new Float32Array(glyphs.length * 4);
+    var linesTotal = new Float32Array(glyphs.length * 4);
+    var lineIndex = new Float32Array(glyphs.length * 4);
     var lineLettersTotal = new Float32Array(glyphs.length * 4);
+    var lineLetterIndex = new Float32Array(glyphs.length * 4);
+    var lineWordsTotal = new Float32Array(glyphs.length * 4);
+    var lineWordIndex = new Float32Array(glyphs.length * 4);
+    var wordsTotal = new Float32Array(glyphs.length * 4);
+    var wordIndex = new Float32Array(glyphs.length * 4);
+    var lettersTotal = new Float32Array(glyphs.length * 4);
+    var letterIndex = new Float32Array(glyphs.length * 4);
     var i = 0;
     var j = 0;
     var k = 0;
     var l = 0;
     var m = 0;
-    var lineLetterIndex = 0;
-    var previousLineIndex = -1;
+    var n = 0;
+    var o = 0;
+    var p = 0;
+    var q = 0;
+    var r = 0;
 
     for (var index = 0; index < glyphs.length; index++) {
-      var glyph = glyphs[index];
-      lines[i++] = glyph.line;
-      lines[i++] = glyph.line;
-      lines[i++] = glyph.line;
-      lines[i++] = glyph.line;
-      letters[j++] = glyph.index;
-      letters[j++] = glyph.index;
-      letters[j++] = glyph.index;
-      letters[j++] = glyph.index;
-      lineLettersTotal[l++] = glyph.lineLettersTotal;
-      lineLettersTotal[l++] = glyph.lineLettersTotal;
-      lineLettersTotal[l++] = glyph.lineLettersTotal;
-      lineLettersTotal[l++] = glyph.lineLettersTotal;
-      lineWordsTotal[l++] = glyph.lineWordsTotal;
-      lineWordsTotal[l++] = glyph.lineWordsTotal;
-      lineWordsTotal[l++] = glyph.lineWordsTotal;
-      lineWordsTotal[l++] = glyph.lineWordsTotal;
+      var glyph = glyphs[index]; // i
 
-      if (previousLineIndex === glyph.line) {
-        lineLetterIndex++;
-      } else {
-        lineLetterIndex = 0;
-      }
+      linesTotal[i++] = glyph.linesTotal;
+      linesTotal[i++] = glyph.linesTotal;
+      linesTotal[i++] = glyph.linesTotal;
+      linesTotal[i++] = glyph.linesTotal; // j
 
-      previousLineIndex = glyph.line;
-      lineLetters[k++] = lineLetterIndex;
-      lineLetters[k++] = lineLetterIndex;
-      lineLetters[k++] = lineLetterIndex;
-      lineLetters[k++] = lineLetterIndex;
-      words[m++] = glyph.wordIndex;
-      words[m++] = glyph.wordIndex;
-      words[m++] = glyph.wordIndex;
-      words[m++] = glyph.wordIndex;
+      lineIndex[j++] = glyph.lineIndex;
+      lineIndex[j++] = glyph.lineIndex;
+      lineIndex[j++] = glyph.lineIndex;
+      lineIndex[j++] = glyph.lineIndex; // k
+
+      lineLettersTotal[k++] = glyph.lineLettersTotal;
+      lineLettersTotal[k++] = glyph.lineLettersTotal;
+      lineLettersTotal[k++] = glyph.lineLettersTotal;
+      lineLettersTotal[k++] = glyph.lineLettersTotal; // l
+
+      lineLetterIndex[l++] = glyph.lineLetterIndex;
+      lineLetterIndex[l++] = glyph.lineLetterIndex;
+      lineLetterIndex[l++] = glyph.lineLetterIndex;
+      lineLetterIndex[l++] = glyph.lineLetterIndex; // m
+
+      lineWordsTotal[m++] = glyph.lineWordsTotal;
+      lineWordsTotal[m++] = glyph.lineWordsTotal;
+      lineWordsTotal[m++] = glyph.lineWordsTotal;
+      lineWordsTotal[m++] = glyph.lineWordsTotal; // n
+
+      lineWordIndex[n++] = glyph.lineWordIndex;
+      lineWordIndex[n++] = glyph.lineWordIndex;
+      lineWordIndex[n++] = glyph.lineWordIndex;
+      lineWordIndex[n++] = glyph.lineWordIndex; // o
+
+      wordsTotal[o++] = glyph.wordsTotal;
+      wordsTotal[o++] = glyph.wordsTotal;
+      wordsTotal[o++] = glyph.wordsTotal;
+      wordsTotal[o++] = glyph.wordsTotal; // p
+
+      wordIndex[p++] = glyph.wordIndex;
+      wordIndex[p++] = glyph.wordIndex;
+      wordIndex[p++] = glyph.wordIndex;
+      wordIndex[p++] = glyph.wordIndex; // q
+
+      lettersTotal[q++] = glyph.lettersTotal;
+      lettersTotal[q++] = glyph.lettersTotal;
+      lettersTotal[q++] = glyph.lettersTotal;
+      lettersTotal[q++] = glyph.lettersTotal; // r
+
+      letterIndex[r++] = glyph.letterIndex;
+      letterIndex[r++] = glyph.letterIndex;
+      letterIndex[r++] = glyph.letterIndex;
+      letterIndex[r++] = glyph.letterIndex;
     }
 
     return {
-      words: words,
-      lines: lines,
-      letters: letters,
-      lineLetters: lineLetters,
-      lineLettersTotal: lineLettersTotal
+      linesTotal: linesTotal,
+      lineIndex: lineIndex,
+      lineLettersTotal: lineLettersTotal,
+      lineLetterIndex: lineLetterIndex,
+      lineWordsTotal: lineWordsTotal,
+      lineWordIndex: lineWordIndex,
+      wordsTotal: wordsTotal,
+      wordIndex: wordIndex,
+      lettersTotal: lettersTotal,
+      letterIndex: letterIndex
     };
   }
 
@@ -11947,16 +12000,20 @@
         }); // update vertex data
 
         this.setIndex(indices);
-        console.log(infos);
         this.setAttribute('position', new BufferAttribute(attributes.positions, 2));
         this.setAttribute('center', new BufferAttribute(attributes.centers, 2));
         this.setAttribute('uv', new BufferAttribute(attributes.uvs, 2));
-        this.setAttribute('layoutUv', new BufferAttribute(attributes.layoutUvs, 2));
-        this.setAttribute('letter', new BufferAttribute(infos.letters, 1));
-        this.setAttribute('word', new BufferAttribute(infos.words, 1));
-        this.setAttribute('line', new BufferAttribute(infos.lines, 1));
-        this.setAttribute('lineLetter', new BufferAttribute(infos.lineLetters, 1));
-        this.setAttribute('lineLettersTotal', new BufferAttribute(infos.lineLettersTotal, 1)); // update multipage data
+        this.setAttribute('layoutUv', new BufferAttribute(attributes.layoutUvs, 2)); // this.setAttribute('linesTotal', new BufferAttribute(infos.linesTotal, 1)); // Use uniforms instead
+
+        this.setAttribute('lineIndex', new BufferAttribute(infos.lineIndex, 1));
+        this.setAttribute('lineLettersTotal', new BufferAttribute(infos.lineLettersTotal, 1));
+        this.setAttribute('lineLetterIndex', new BufferAttribute(infos.lineLetterIndex, 1));
+        this.setAttribute('lineWordsTotal', new BufferAttribute(infos.lineWordsTotal, 1));
+        this.setAttribute('lineWordIndex', new BufferAttribute(infos.lineWordIndex, 1)); // this.setAttribute('wordsTotal', new BufferAttribute(infos.wordsTotal, 1)); // Use uniforms instead
+
+        this.setAttribute('wordIndex', new BufferAttribute(infos.wordIndex, 1)); // this.setAttribute('lettersTotal', new BufferAttribute(infos.lettersTotal, 1)); // Use uniforms instead
+
+        this.setAttribute('letterIndex', new BufferAttribute(infos.letterIndex, 1)); // update multipage data
 
         if (!options.multipage && 'page' in this.attributes) {
           // disable multipage rendering
@@ -12065,11 +12122,11 @@
 
   var fragmentShader = "#define GLSLIFY 1\nvarying vec2 vUv;\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\n}"; // eslint-disable-line
 
-  var attributes = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float line;attribute float letter;attribute float lineLetters;attribute float lineLettersTotal;"; // eslint-disable-line
+  var attributes = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float lineIndex;attribute float lineLettersTotal;attribute float lineLetterIndex;attribute float lineWordsTotal;attribute float lineWordIndex;attribute float wordIndex;attribute float letterIndex;"; // eslint-disable-line
 
-  var varyings = "#define GLSLIFY 1\nvarying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLetterIndex;varying float vLineLetterIndex;varying float vLineLettersTotal;"; // eslint-disable-line
+  var varyings = "#define GLSLIFY 1\nvarying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;"; // eslint-disable-line
 
-  var vertex$2 = "#define GLSLIFY 1\nvec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=line;vLetterIndex=letter;vLineLetterIndex=lineLetters;vLineLettersTotal=lineLettersTotal;"; // eslint-disable-line
+  var vertex$2 = "#define GLSLIFY 1\nvec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=lineIndex;vLineLettersTotal=lineLettersTotal;vLineLetterIndex=lineLetterIndex;vLineWordsTotal=lineWordsTotal;vLineWordIndex=lineWordIndex;vWordIndex=wordIndex;vLetterIndex=letterIndex;"; // eslint-disable-line
 
   var median = "#define GLSLIFY 1\nfloat median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}"; // eslint-disable-line
 
@@ -12698,24 +12755,15 @@
 
   var vertex = "#define GLSLIFY 1\n#include <three_msdf_attributes>\n#include <three_msdf_varyings>\nvoid main(){\n#include <three_msdf_vertex>\n}"; // eslint-disable-line
 
-  var fragment = "#define GLSLIFY 1\n#include <three_msdf_varyings>\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\nfilledFragColor.a+=vLetterIndex;gl_FragColor=filledFragColor;gl_FragColor=vec4(vLayoutUv.x,0.0,0.0,1.0);}"; // eslint-disable-line
+  var fragment = "#define GLSLIFY 1\n#include <three_msdf_varyings>\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\nuniform float uLinesTotal;uniform float uLettersTotal;uniform float uWordsTotal;\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\ngl_FragColor=filledFragColor*((vLetterIndex+1.0)/uLettersTotal);gl_FragColor=filledFragColor*((vLineIndex+1.0)/uLinesTotal);}"; // eslint-disable-line
 
   var config = {
     name: 'Reveal',
-    text: 'Reveal Text \n coucou',
+    text: 'Reveal Text \n Reveal text',
     settings: {
       color: '#ffffff'
     }
-  }; // Letter index -> OK
-  // Letters total -> OK
-  // Line letter index -> OK
-  // Line letters total --> OK
-  // Word index
-  // Words total
-  // Word line index
-  // Words line total
-  // Line index --> OK
-  // Lines total --> OK
+  };
 
   var Reveal = /*#__PURE__*/function () {
     function Reveal() {
@@ -12780,7 +12828,18 @@
             extensions: {
               derivatives: true
             },
-            uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes),
+            uniforms: _objectSpread2(_objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes), {}, {
+              // Layout
+              uLinesTotal: {
+                value: geometry.layout.linesTotal
+              },
+              uLettersTotal: {
+                value: geometry.layout.lettersTotal
+              },
+              uWordsTotal: {
+                value: geometry.layout.wordsTotal
+              }
+            }),
             vertexShader: vertex,
             fragmentShader: fragment
           });

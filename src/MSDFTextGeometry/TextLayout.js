@@ -61,6 +61,10 @@ class TextLayout {
         return this._lettersTotal;
     }
 
+    get wordsTotal() {
+        return this._wordsTotal;
+    }
+
     update(options) {
         options = Object.assign({ measure: this._measure }, options);
 
@@ -78,7 +82,7 @@ class TextLayout {
         const minWidth = options.width || 0;
 
         const wordsTotal = text.split(' ').filter(word => word !== '\n').length;
-        const lettersTotal = text.split('').length;
+        const lettersTotal = text.split('').filter(char => char !== '\n' && char !== ' ').length;
 
         // clear glyphs
         glyphs.length = 0;
@@ -111,15 +115,22 @@ class TextLayout {
         this._lineHeight = lineHeight;
         this._ascender = lineHeight - descender - this._xHeight;
 
+        let wordIndex = 0;
+        let letterIndex = 0;
+
         // layout each glyph
         lines.forEach((line, lineIndex) => {
             const start = line.start;
             const end = line.end;
             const lineWidth = line.width;
+            const lineString = text.slice(start, end);
+
+            const lineWordsTotal = lineString.split(' ').filter((item) => item !== '').length;
+            const lineLettersTotal = text.slice(start, end).split(' ').join('').length;
             let lineLetterIndex = 0;
-            const lineLettersTotal = line.end - line.start;
+            let lineWordIndex = 0;
+
             let lastGlyph;
-            const wordIndex = 0;
 
             // for each glyph in that line...
             for (let i = start; i < end; i++) {
@@ -142,24 +153,34 @@ class TextLayout {
                         position: [tx, y],
                         data: glyph,
                         index: i,
-                        line: lineIndex,
+                        // Line
                         linesTotal: lines.length,
+                        lineIndex,
                         lineLettersTotal,
                         lineLetterIndex,
+                        lineWordsTotal,
+                        lineWordIndex,
+                        // Word
                         wordsTotal,
                         wordIndex,
+                        // Letter
                         lettersTotal,
+                        letterIndex,
                     });
+
+                    if (glyph.id === SPACE_ID && lastGlyph.id !== SPACE_ID) {
+                        lineWordIndex++;
+                        wordIndex++;
+                    }
+
+                    if (glyph.id !== SPACE_ID) {
+                        lineLetterIndex++;
+                        letterIndex++;
+                    }
 
                     // move pen forward
                     x += glyph.xadvance + letterSpacing;
                     lastGlyph = glyph;
-
-                    lineLetterIndex++;
-
-                    // if (glyph.id === SPACE_ID && lastGlyph.id !== SPACE_ID) {
-                    //     wordIndex++;
-                    // }
                 }
             }
 
@@ -168,12 +189,8 @@ class TextLayout {
             x = 0;
         });
 
-        // Add more data to glyph
-        glyphs.forEach((glyph, glyphIndex) => {
-            console.log(glyph);
-        });
-
-        this._lettersTotal = glyphs.length;
+        this._lettersTotal = lettersTotal;
+        this._wordsTotal = wordsTotal;
         this._linesTotal = lines.length;
     }
 

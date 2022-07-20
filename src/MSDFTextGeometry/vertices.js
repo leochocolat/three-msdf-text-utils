@@ -112,66 +112,112 @@ function attributes(glyphs, texWidth, texHeight, flipY, layout) {
 }
 
 function infos(glyphs, layout) {
-    const lines = new Float32Array(glyphs.length * 4);
-    const words = new Float32Array(glyphs.length * 4);
-    const lineWords = new Float32Array(glyphs.length * 4);
-    const lineWordsTotal = new Float32Array(glyphs.length * 4);
-    const letters = new Float32Array(glyphs.length * 4);
-    const lineLetters = new Float32Array(glyphs.length * 4);
+    const linesTotal = new Float32Array(glyphs.length * 4);
+    const lineIndex = new Float32Array(glyphs.length * 4);
+
     const lineLettersTotal = new Float32Array(glyphs.length * 4);
+    const lineLetterIndex = new Float32Array(glyphs.length * 4);
+
+    const lineWordsTotal = new Float32Array(glyphs.length * 4);
+    const lineWordIndex = new Float32Array(glyphs.length * 4);
+
+    const wordsTotal = new Float32Array(glyphs.length * 4);
+    const wordIndex = new Float32Array(glyphs.length * 4);
+
+    const lettersTotal = new Float32Array(glyphs.length * 4);
+    const letterIndex = new Float32Array(glyphs.length * 4);
 
     let i = 0;
     let j = 0;
     let k = 0;
     let l = 0;
     let m = 0;
-
-    let lineLetterIndex = 0;
-    let previousLineIndex = -1;
+    let n = 0;
+    let o = 0;
+    let p = 0;
+    let q = 0;
+    let r = 0;
 
     for (let index = 0; index < glyphs.length; index++) {
         const glyph = glyphs[index];
 
-        lines[i++] = glyph.line;
-        lines[i++] = glyph.line;
-        lines[i++] = glyph.line;
-        lines[i++] = glyph.line;
+        // i
+        linesTotal[i++] = glyph.linesTotal;
+        linesTotal[i++] = glyph.linesTotal;
+        linesTotal[i++] = glyph.linesTotal;
+        linesTotal[i++] = glyph.linesTotal;
 
-        letters[j++] = glyph.index;
-        letters[j++] = glyph.index;
-        letters[j++] = glyph.index;
-        letters[j++] = glyph.index;
+        // j
+        lineIndex[j++] = glyph.lineIndex;
+        lineIndex[j++] = glyph.lineIndex;
+        lineIndex[j++] = glyph.lineIndex;
+        lineIndex[j++] = glyph.lineIndex;
 
-        lineLettersTotal[l++] = glyph.lineLettersTotal;
-        lineLettersTotal[l++] = glyph.lineLettersTotal;
-        lineLettersTotal[l++] = glyph.lineLettersTotal;
-        lineLettersTotal[l++] = glyph.lineLettersTotal;
+        // k
+        lineLettersTotal[k++] = glyph.lineLettersTotal;
+        lineLettersTotal[k++] = glyph.lineLettersTotal;
+        lineLettersTotal[k++] = glyph.lineLettersTotal;
+        lineLettersTotal[k++] = glyph.lineLettersTotal;
 
-        lineWordsTotal[l++] = glyph.lineWordsTotal;
-        lineWordsTotal[l++] = glyph.lineWordsTotal;
-        lineWordsTotal[l++] = glyph.lineWordsTotal;
-        lineWordsTotal[l++] = glyph.lineWordsTotal;
+        // l
+        lineLetterIndex[l++] = glyph.lineLetterIndex;
+        lineLetterIndex[l++] = glyph.lineLetterIndex;
+        lineLetterIndex[l++] = glyph.lineLetterIndex;
+        lineLetterIndex[l++] = glyph.lineLetterIndex;
 
-        if (previousLineIndex === glyph.line) {
-            lineLetterIndex++;
-        } else {
-            lineLetterIndex = 0;
-        }
+        // m
+        lineWordsTotal[m++] = glyph.lineWordsTotal;
+        lineWordsTotal[m++] = glyph.lineWordsTotal;
+        lineWordsTotal[m++] = glyph.lineWordsTotal;
+        lineWordsTotal[m++] = glyph.lineWordsTotal;
 
-        previousLineIndex = glyph.line;
+        // n
+        lineWordIndex[n++] = glyph.lineWordIndex;
+        lineWordIndex[n++] = glyph.lineWordIndex;
+        lineWordIndex[n++] = glyph.lineWordIndex;
+        lineWordIndex[n++] = glyph.lineWordIndex;
 
-        lineLetters[k++] = lineLetterIndex;
-        lineLetters[k++] = lineLetterIndex;
-        lineLetters[k++] = lineLetterIndex;
-        lineLetters[k++] = lineLetterIndex;
+        // o
+        wordsTotal[o++] = glyph.wordsTotal;
+        wordsTotal[o++] = glyph.wordsTotal;
+        wordsTotal[o++] = glyph.wordsTotal;
+        wordsTotal[o++] = glyph.wordsTotal;
 
-        words[m++] = glyph.wordIndex;
-        words[m++] = glyph.wordIndex;
-        words[m++] = glyph.wordIndex;
-        words[m++] = glyph.wordIndex;
+        // p
+        wordIndex[p++] = glyph.wordIndex;
+        wordIndex[p++] = glyph.wordIndex;
+        wordIndex[p++] = glyph.wordIndex;
+        wordIndex[p++] = glyph.wordIndex;
+
+        // q
+        lettersTotal[q++] = glyph.lettersTotal;
+        lettersTotal[q++] = glyph.lettersTotal;
+        lettersTotal[q++] = glyph.lettersTotal;
+        lettersTotal[q++] = glyph.lettersTotal;
+
+        // r
+        letterIndex[r++] = glyph.letterIndex;
+        letterIndex[r++] = glyph.letterIndex;
+        letterIndex[r++] = glyph.letterIndex;
+        letterIndex[r++] = glyph.letterIndex;
     }
 
-    return { words, lines, letters, lineLetters, lineLettersTotal };
+    return {
+        linesTotal,
+        lineIndex,
+
+        lineLettersTotal,
+        lineLetterIndex,
+
+        lineWordsTotal,
+        lineWordIndex,
+
+        wordsTotal,
+        wordIndex,
+
+        lettersTotal,
+        letterIndex,
+    };
 }
 
 export default {

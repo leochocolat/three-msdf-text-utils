@@ -9,7 +9,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   Refacto to ES6
 -   Remove some small old dependencies
 -   Replace some deprecated three.js code
--   Add more geometry attributes : letter center positions, letters index, line index, letters index by line, word index, Text block UV.
+-   Add more geometry attributes : layout uv, letter center positions, letter index, line index, letter index by line, word index, word index by line...
 -   Check compatibility with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
 -   More to come...
 

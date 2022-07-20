@@ -21,4 +21,5 @@ export default {
         uStrokeOutsetWidth: { value: 0.0 },
         uStrokeInsetWidth: { value: 0.3 },
     },
+
 };

@@ -5,6 +5,10 @@
 #include <three_msdf_common_uniforms>
 #include <three_msdf_strokes_uniforms>
 
+uniform float uLinesTotal;
+uniform float uLettersTotal;
+uniform float uWordsTotal;
+
 // Utils
 #include <three_msdf_median>
 
@@ -21,8 +25,9 @@ void main() {
     // Outputs
     #include <three_msdf_common_output>
 
-    filledFragColor.a += vLetterIndex;
+    // Letter per letter
+    gl_FragColor = filledFragColor * ((vLetterIndex + 1.0) / uLettersTotal);
 
-    gl_FragColor = filledFragColor;
-    gl_FragColor = vec4(vLayoutUv.x, 0.0, 0.0, 1.0);
+    // Line by line
+    gl_FragColor = filledFragColor * ((vLineIndex + 1.0) / uLinesTotal);
 }

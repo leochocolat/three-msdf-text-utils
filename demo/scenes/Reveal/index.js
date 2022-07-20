@@ -77,6 +77,10 @@ export default class Reveal {
                     ...uniforms.rendering,
                     // Strokes
                     ...uniforms.strokes,
+                    // Layout
+                    uLinesTotal: { value: geometry.layout.linesTotal },
+                    uLettersTotal: { value: geometry.layout.lettersTotal },
+                    uWordsTotal: { value: geometry.layout.wordsTotal },
                 },
                 vertexShader: vertex,
                 fragmentShader: fragment,

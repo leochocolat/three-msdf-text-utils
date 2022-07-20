@@ -8,7 +8,15 @@ vUv = uv;
 vLayoutUv = layoutUv;
 vViewPosition = -mvPosition.xyz;
 vNormal = normal;
-vLineIndex = line;
-vLetterIndex = letter;
-vLineLetterIndex = lineLetters;
+
+vLineIndex = lineIndex;
+
 vLineLettersTotal = lineLettersTotal;
+vLineLetterIndex = lineLetterIndex;
+
+vLineWordsTotal = lineWordsTotal;
+vLineWordIndex = lineWordIndex;
+
+vWordIndex = wordIndex;
+
+vLetterIndex = letterIndex;
