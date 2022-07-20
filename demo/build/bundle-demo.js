@@ -12755,7 +12755,7 @@
 
   var vertex = "#define GLSLIFY 1\n#include <three_msdf_attributes>\n#include <three_msdf_varyings>\nvoid main(){\n#include <three_msdf_vertex>\n}"; // eslint-disable-line
 
-  var fragment = "#define GLSLIFY 1\n#include <three_msdf_varyings>\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\nuniform float uLinesTotal;uniform float uLettersTotal;uniform float uWordsTotal;\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\ngl_FragColor=filledFragColor*((vLetterIndex+1.0)/uLettersTotal);gl_FragColor=filledFragColor*((vLineIndex+1.0)/uLinesTotal);}"; // eslint-disable-line
+  var fragment = "#define GLSLIFY 1\n#include <three_msdf_varyings>\n#include <three_msdf_common_uniforms>\n#include <three_msdf_strokes_uniforms>\nuniform float uLinesTotal;uniform float uLettersTotal;uniform float uWordsTotal;\n#include <three_msdf_median>\nvoid main(){\n#include <three_msdf_common>\n#include <three_msdf_strokes>\n#include <three_msdf_alpha_test>\n#include <three_msdf_common_output>\ngl_FragColor=filledFragColor*((vLineLetterIndex+1.0)/vLineLettersTotal);}"; // eslint-disable-line
 
   var config = {
     name: 'Reveal',

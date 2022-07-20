@@ -25,9 +25,18 @@ void main() {
     // Outputs
     #include <three_msdf_common_output>
 
-    // Letter per letter
-    gl_FragColor = filledFragColor * ((vLetterIndex + 1.0) / uLettersTotal);
+    // Letter by letter
+    // gl_FragColor = filledFragColor * ((vLetterIndex + 1.0) / uLettersTotal);
 
     // Line by line
-    gl_FragColor = filledFragColor * ((vLineIndex + 1.0) / uLinesTotal);
+    // gl_FragColor = filledFragColor * ((vLineIndex + 1.0) / uLinesTotal);
+
+    // Word by word
+    // gl_FragColor = filledFragColor * ((vWordIndex + 1.0) / uWordsTotal);
+
+    // Letter by letter per line
+    gl_FragColor = filledFragColor * ((vLineLetterIndex + 1.0) / vLineLettersTotal);
+
+    // Word by word per line
+    // gl_FragColor = filledFragColor * ((vLineWordIndex + 1.0) / vLineWordsTotal);
 }
