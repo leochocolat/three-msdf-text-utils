@@ -18,6 +18,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   [Basic](https://leochocolat.github.io/three-msdf-text/demo/?demo=basic)
 -   [Stroke](https://leochocolat.github.io/three-msdf-text/demo/?demo=stroke)
 -   [Editor](https://leochocolat.github.io/three-msdf-text/demo/?demo=editor)
+-   [Reveal](https://leochocolat.github.io/three-msdf-text/demo/?demo=reveal)
 -   More to come...
 
 ## Bitmap Font and Font Atlas
