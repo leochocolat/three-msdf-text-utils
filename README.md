@@ -36,6 +36,7 @@ npm install github:leochocolat/three-msdf-text
 
 ```js
 import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text";
+import * as THREE from 'three';
 
 Promise.all([
     loadFontAtlas("./fonts/roboto/roboto-regular.png"),
@@ -49,12 +50,12 @@ Promise.all([
     const material = new MSDFTextMaterial();
     material.uniforms.uMap.value = atlas;
 
-    const mesh = new Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
 });
 
 function loadFontAtlas(path) {
     const promise = new Promise((resolve, reject) => {
-        const loader = new TextureLoader();
+        const loader = new THREE.TextureLoader();
         loader.load(path, resolve);
     });
 
@@ -63,7 +64,7 @@ function loadFontAtlas(path) {
 
 function loadFont(path) {
     const promise = new Promise((resolve, reject) => {
-        const loader = new FontLoader();
+        const loader = new THREE.FontLoader();
         loader.load(path, resolve);
     });
 
@@ -136,7 +137,7 @@ material.uniforms.uMap.value = atlas;
 
 ```js
 const defaultOptions = {
-    side: FrontSide,
+    side: THREE.FrontSide,
     transparent: true,
     defines: {
         IS_SMALL: false,
@@ -170,8 +171,9 @@ You can create your own custom material with your shaders by using shader chunks
 
 ```js
 import { uniforms } from "three-msdf-text";
+import * as THREE from 'three';
 
-const material = new ShaderMaterial({
+const material = new THREE.ShaderMaterial({
     side: DoubleSide,
     transparent: true,
     defines: {
@@ -183,8 +185,10 @@ const material = new ShaderMaterial({
     uniforms: {
         // Common
         ...uniforms.common,
+        
         // Rendering
         ...uniforms.rendering,
+        
         // Strokes
         ...uniforms.strokes,
     },
@@ -232,10 +236,7 @@ material.uniforms.uMap.value = atlas;
 
 -   [quad-indices](https://www.npmjs.com/package/quad-indices)
 -   [word-wrapper](https://www.npmjs.com/package/word-wrapper)
-
-### Peer Dependencies
-
--   [three.js](https://www.npmjs.com/package/three)
+-   [three.js](https://www.npmjs.com/package/three) (peer dependency)
 
 ## Development
 
@@ -250,4 +251,5 @@ npm run dev
 ## Roadmap
 
 -   More examples
+-   More docs for custom shader material
 -   Manage versions
