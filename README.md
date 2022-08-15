@@ -1,8 +1,10 @@
-# Three MSDF Text
+# Three MSDF Text (Beta)
 
 Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (multi-channel signed distance fields).
 
 Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
+
+⚠️ I don't recommand using this package in producation yet since it's still in a WIP state. The structure and usage might change a little. Versions management and publishing to NPM are in the roadmap... 
 
 **It includes :**
 
@@ -253,3 +255,4 @@ npm run dev
 -   More examples
 -   More docs for custom shader material
 -   Manage versions
+-   Publish to NPM
