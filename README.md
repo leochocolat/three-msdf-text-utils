@@ -4,7 +4,7 @@ Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (mult
 
 Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 
-⚠️ I don't recommand using this package in producation yet since it's still in a WIP state. The structure and usage might change a little. Versions management and publishing to NPM are in the roadmap... 
+⚠️ I don't recommand using this package in production yet since it's still in a WIP state. The structure and usage might change a little. Versions management and publishing to NPM are in the roadmap... 
 
 **It includes :**
 
@@ -12,7 +12,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   Remove some small old dependencies
 -   Replace some deprecated three.js code
 -   Add more geometry attributes : layout uv, letter center positions, letter index, line index, letter index by line, word index, word index by line...
--   Check compatibility with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
+-   Compatibility check with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
 -   More to come...
 
 ## Demo
