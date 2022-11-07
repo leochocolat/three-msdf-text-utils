@@ -38,6 +38,7 @@ npm install github:leochocolat/three-msdf-text
 
 ```js
 import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text";
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import * as THREE from 'three';
 
 Promise.all([
@@ -66,7 +67,7 @@ function loadFontAtlas(path) {
 
 function loadFont(path) {
     const promise = new Promise((resolve, reject) => {
-        const loader = new THREE.FontLoader();
+        const loader = new FontLoader();
         loader.load(path, resolve);
     });
 
