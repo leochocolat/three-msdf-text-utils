@@ -40,7 +40,6 @@ const defaultOptions = {
 export {
     uniforms,
     defaultOptions,
-    shaderChunks
 };
 
 export default class MSDFTextMaterial extends ShaderMaterial {
