@@ -1,5 +1,5 @@
 {
-  "name": "three-msdf-text",
+  "name": "three-msdf-text-utils",
   "version": "1.0.0",
   "description": "",
   "main": "build/bundle.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leochocolat/three-msdf-text.git"
+    "url": "git+https://github.com/leochocolat/three-msdf-text-utils.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/leochocolat/three-msdf-text/issues"
+    "url": "https://github.com/leochocolat/three-msdf-text-utils/issues"
   },
-  "homepage": "https://github.com/leochocolat/three-msdf-text#readme",
+  "homepage": "https://github.com/leochocolat/three-msdf-text-utils#readme",
   "devDependencies": {
     "@babel/core": "^7.18.6",
     "@babel/eslint-parser": "^7.18.2",
@@ -41,8 +41,7 @@
     "tweakpane": "^3.1.0"
   },
   "peerDependencies": {
-    "three": ">= 0.129.0",
-    "tweakpane": "^3.1.0"
+    "three": ">= 0.129.0"
   },
   "dependencies": {
     "quad-indices": "^2.0.1",

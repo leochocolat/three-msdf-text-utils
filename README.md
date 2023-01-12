@@ -17,10 +17,10 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 
 ## Demo
 
--   [Basic](https://leochocolat.github.io/three-msdf-text/demo/?demo=basic)
--   [Stroke](https://leochocolat.github.io/three-msdf-text/demo/?demo=stroke)
--   [Editor](https://leochocolat.github.io/three-msdf-text/demo/?demo=editor)
--   [Reveal](https://leochocolat.github.io/three-msdf-text/demo/?demo=reveal)
+-   [Basic](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=basic)
+-   [Stroke](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=stroke)
+-   [Editor](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=editor)
+-   [Reveal](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=reveal)
 -   More to come...
 
 ## Bitmap Font and Font Atlas
@@ -31,13 +31,13 @@ You can also check my [msdf-font-factory](https://github.com/leochocolat/msdf-fo
 ## Installation
 
 ```bash
-npm install github:leochocolat/three-msdf-text
+npm install github:leochocolat/three-msdf-text-utils
 ```
 
 ## Usage
 
 ```js
-import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text";
+import { MSDFTextGeometry, MSDFTextMaterial } from "three-msdf-text-utils";
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import * as THREE from 'three';
 
@@ -173,7 +173,7 @@ const defaultOptions = {
 You can create your own custom material with your shaders by using shader chunks and some uniforms :
 
 ```js
-import { uniforms } from "three-msdf-text";
+import { uniforms } from "three-msdf-text-utils";
 import * as THREE from 'three';
 
 const material = new THREE.ShaderMaterial({
@@ -256,4 +256,3 @@ npm run dev
 -   More examples
 -   More docs for custom shader material
 -   Manage versions
--   Publish to NPM
