@@ -36,8 +36,8 @@ jobs:
 
             - name: 🔧 Configure github
               run: |
-                  git config --local user.email "gobelins.axis.development@gmail.com"
-                  git config --local user.name "gobelins-axis-development"
+                  git config --local user.email "l.mouraire@outlook.fr"
+                  git config --local user.name "leochocolat"
                   git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com/
 
             - name: 📦 Install dependencies
