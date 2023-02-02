@@ -37,7 +37,7 @@ jobs:
             - name: 🔧 Configure github
               run: |
                   git config --local user.email "l.mouraire@outlook.fr"
-                  git config --local user.name "Léo Mouraire"
+                  git config --local user.name "leochocolat"
                   git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf ssh://git@github.com/
 
             - name: 📦 Install dependencies
