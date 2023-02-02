@@ -31,7 +31,7 @@ You can also check my [msdf-font-factory](https://github.com/leochocolat/msdf-fo
 ## Installation
 
 ```bash
-npm install github:leochocolat/three-msdf-text-utils
+npm install three-msdf-text-utils
 ```
 
 ## Usage
@@ -346,3 +346,5 @@ npm run dev
 
 -   More examples
 -   More docs for custom shader material
+-   Manage versions
+-   NPM Publish workflow
