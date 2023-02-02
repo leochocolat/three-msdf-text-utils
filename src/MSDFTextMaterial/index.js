@@ -1,5 +1,5 @@
 // Vendor
-import { ShaderMaterial, FrontSide, ShaderChunk } from 'three';
+import { ShaderMaterial, FrontSide } from 'three';
 
 // Uniforms
 import uniforms from './uniforms';
@@ -7,14 +7,6 @@ import uniforms from './uniforms';
 // Shaders
 import vertexShader from './shaders/vertex.glsl';
 import fragmentShader from './shaders/fragment.glsl';
-
-// Shunks
-import shaderChunks from './shaderChunks';
-
-// Add chunks
-for (const key in shaderChunks) {
-    ShaderChunk[key] = shaderChunks[key];
-}
 
 const defaultOptions = {
     side: FrontSide,
@@ -40,7 +32,6 @@ const defaultOptions = {
 export {
     uniforms,
     defaultOptions,
-    shaderChunks
 };
 
 export default class MSDFTextMaterial extends ShaderMaterial {

@@ -170,7 +170,7 @@ const defaultOptions = {
 
 #### Custom material
 
-You can create your own custom material with your shaders by using shader chunks and some uniforms :
+If you want to make some specific text effects you can create your own glsl code in your shader material based on the MSDFTextMaterial shader.
 
 ```js
 import { uniforms } from "three-msdf-text-utils";
@@ -197,38 +197,129 @@ const material = new THREE.ShaderMaterial({
     },
     vertexShader: `
         // Attribute
-        #include <three_msdf_attributes>
+        attribute vec2 layoutUv;
+
+        attribute float lineIndex;
+
+        attribute float lineLettersTotal;
+        attribute float lineLetterIndex;
+
+        attribute float lineWordsTotal;
+        attribute float lineWordIndex;
+
+        attribute float wordIndex;
+
+        attribute float letterIndex;
 
         // Varyings
-        #include <three_msdf_varyings>
+        varying vec2 vUv;
+        varying vec2 vLayoutUv;
+        varying vec3 vViewPosition;
+        varying vec3 vNormal;
+
+        varying float vLineIndex;
+
+        varying float vLineLettersTotal;
+        varying float vLineLetterIndex;
+
+        varying float vLineWordsTotal;
+        varying float vLineWordIndex;
+
+        varying float vWordIndex;
+
+        varying float vLetterIndex;
 
         void main() {
-            #include <three_msdf_vertex>
+            // Output
+            vec4 mvPosition = vec4(position, 1.0);
+            mvPosition = modelViewMatrix * mvPosition;
+            gl_Position = projectionMatrix * mvPosition;
+
+            // Varyings
+            vUv = uv;
+            vLayoutUv = layoutUv;
+            vViewPosition = -mvPosition.xyz;
+            vNormal = normal;
+
+            vLineIndex = lineIndex;
+
+            vLineLettersTotal = lineLettersTotal;
+            vLineLetterIndex = lineLetterIndex;
+
+            vLineWordsTotal = lineWordsTotal;
+            vLineWordIndex = lineWordIndex;
+
+            vWordIndex = wordIndex;
+
+            vLetterIndex = letterIndex;
         }
     `,
     fragmentShader: `
         // Varyings
-        #include <three_msdf_varyings>
+        varying vec2 vUv;
 
-        // Uniforms
-        #include <three_msdf_common_uniforms>
-        #include <three_msdf_strokes_uniforms>
+        // Uniforms: Common
+        uniform float uOpacity;
+        uniform float uThreshold;
+        uniform float uAlphaTest;
+        uniform vec3 uColor;
+        uniform sampler2D uMap;
 
-        // Utils
-        #include <three_msdf_median>
+        // Uniforms: Strokes
+        uniform vec3 uStrokeColor;
+        uniform float uStrokeOutsetWidth;
+        uniform float uStrokeInsetWidth;
+
+        // Utils: Median
+        float median(float r, float g, float b) {
+            return max(min(r, g), min(max(r, g), b));
+        }
 
         void main() {
             // Common
-            #include <three_msdf_common>
+            // Texture sample
+            vec3 s = texture2D(uMap, vUv).rgb;
+
+            // Signed distance
+            float sigDist = median(s.r, s.g, s.b) - 0.5;
+
+            float afwidth = 1.4142135623730951 / 2.0;
+
+            #ifdef IS_SMALL
+                float alpha = smoothstep(uThreshold - afwidth, uThreshold + afwidth, sigDist);
+            #else
+                float alpha = clamp(sigDist / fwidth(sigDist) + 0.5, 0.0, 1.0);
+            #endif
 
             // Strokes
-            #include <three_msdf_strokes>
+            // Outset
+            float sigDistOutset = sigDist + uStrokeOutsetWidth * 0.5;
+
+            // Inset
+            float sigDistInset = sigDist - uStrokeInsetWidth * 0.5;
+
+            #ifdef IS_SMALL
+                float outset = smoothstep(uThreshold - afwidth, uThreshold + afwidth, sigDistOutset);
+                float inset = 1.0 - smoothstep(uThreshold - afwidth, uThreshold + afwidth, sigDistInset);
+            #else
+                float outset = clamp(sigDistOutset / fwidth(sigDistOutset) + 0.5, 0.0, 1.0);
+                float inset = 1.0 - clamp(sigDistInset / fwidth(sigDistInset) + 0.5, 0.0, 1.0);
+            #endif
+
+            // Border
+            float border = outset * inset;
 
             // Alpha Test
-            #include <three_msdf_alpha_test>
+            if (alpha < uAlphaTest) discard;
 
-            // Outputs
-            #include <three_msdf_strokes_output>
+            // Some animation
+            alpha *= sin(uTime);
+
+            // Output: Common
+
+            vec4 filledFragColor = vec4(uColor, uOpacity * alpha);
+
+            gl_FragColor = filledFragColor;
         }
     `,
 });
@@ -255,4 +346,3 @@ npm run dev
 
 -   More examples
 -   More docs for custom shader material
--   Manage versions

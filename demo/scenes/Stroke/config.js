@@ -4,7 +4,7 @@ export default {
     text: 'Stroke example',
 
     settings: {
-        color: '#ffffff',
+        color: '#000000',
         strokeColor: '#ffffff',
     },
 };
