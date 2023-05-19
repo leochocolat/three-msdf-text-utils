@@ -5,7 +5,7 @@ export default {
     // Common
     common: {
         uOpacity: { value: 1 },
-        uColor: { value: new Color('#ffffff') },
+        uColor: { value: { r: 255, g: 255, b: 255 } },
         uMap: { value: null },
     },
 
@@ -17,7 +17,7 @@ export default {
 
     // Strokes
     strokes: {
-        uStrokeColor: { value: new Color('#ff0000') },
+        uStrokeColor: { value: { r: 255, g: 0, b: 0 } },
         uStrokeOutsetWidth: { value: 0.0 },
         uStrokeInsetWidth: { value: 0.3 },
     },
