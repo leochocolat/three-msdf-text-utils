@@ -1,5 +1,5 @@
 // Vendor
-import { ShaderMaterial, FrontSide, UniformsUtils } from 'three';
+import { ShaderMaterial, FrontSide } from 'three';
 
 // Uniforms
 import uniforms from './uniforms';
@@ -19,11 +19,11 @@ const defaultOptions = {
     },
     uniforms: {
         // Common
-        ...UniformsUtils.clone(uniforms.common),
+        ...uniforms.common,
         // Rendering
-        ...UniformsUtils.clone(uniforms.rendering),
+        ...uniforms.rendering,
         // Strokes
-        ...UniformsUtils.clone(uniforms.strokes),
+        ...uniforms.strokes,
     },
     vertexShader,
     fragmentShader,
@@ -36,7 +36,7 @@ export {
 
 export default class MSDFTextMaterial extends ShaderMaterial {
     constructor(options = {}) {
-        options = Object.assign(defaultOptions, options);
+        options = Object.assign(JSON.parse(JSON.stringify(defaultOptions)), options);
         super(options);
     }
 }
