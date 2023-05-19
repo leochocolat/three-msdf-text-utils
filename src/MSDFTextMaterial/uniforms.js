@@ -1,6 +1,3 @@
-// Vendor
-import { Color } from 'three';
-
 export default {
     // Common
     common: {
