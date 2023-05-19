@@ -1,5 +1,5 @@
 // Vendor
-import { ShaderMaterial, FrontSide } from 'three';
+import { ShaderMaterial, FrontSide, UniformsUtils } from 'three';
 
 // Uniforms
 import uniforms from './uniforms';
@@ -19,11 +19,11 @@ const defaultOptions = {
     },
     uniforms: {
         // Common
-        ...uniforms.common,
+        ...UniformsUtils.clone(uniforms.common),
         // Rendering
-        ...uniforms.rendering,
+        ...UniformsUtils.clone(uniforms.rendering),
         // Strokes
-        ...uniforms.strokes,
+        ...UniformsUtils.clone(uniforms.strokes),
     },
     vertexShader,
     fragmentShader,
