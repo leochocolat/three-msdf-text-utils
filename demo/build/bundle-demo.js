@@ -10510,7 +10510,6 @@
     return MSDFTextGeometry;
   }(BufferGeometry);
 
-  // Vendor
   var uniforms = {
     // Common
     common: {
@@ -10518,7 +10517,11 @@
         value: 1
       },
       uColor: {
-        value: new Color('#ffffff')
+        value: {
+          r: 255,
+          g: 255,
+          b: 255
+        }
       },
       uMap: {
         value: null
@@ -10536,7 +10539,11 @@
     // Strokes
     strokes: {
       uStrokeColor: {
-        value: new Color('#ff0000')
+        value: {
+          r: 255,
+          g: 0,
+          b: 0
+        }
       },
       uStrokeOutsetWidth: {
         value: 0.0
@@ -10560,7 +10567,7 @@
     extensions: {
       derivatives: true
     },
-    uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes),
+    uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, UniformsUtils.clone(uniforms.common)), UniformsUtils.clone(uniforms.rendering)), UniformsUtils.clone(uniforms.strokes)),
     vertexShader: vertexShader,
     fragmentShader: fragmentShader
   };
