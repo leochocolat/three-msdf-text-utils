@@ -310,12 +310,11 @@ const material = new THREE.ShaderMaterial({
             // Alpha Test
             if (alpha < uAlphaTest) discard;
 
-            // Some animation
-            alpha *= sin(uTime);
-
             // Output: Common
-
             vec4 filledFragColor = vec4(uColor, uOpacity * alpha);
+
+            // Output: Strokes
+            vec4 strokedFragColor = vec4(uStrokeColor, uOpacity * border);
 
             gl_FragColor = filledFragColor;
         }
