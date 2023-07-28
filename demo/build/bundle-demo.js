@@ -10567,7 +10567,7 @@
     extensions: {
       derivatives: true
     },
-    uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, UniformsUtils.clone(uniforms.common)), UniformsUtils.clone(uniforms.rendering)), UniformsUtils.clone(uniforms.strokes)),
+    uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes),
     vertexShader: vertexShader,
     fragmentShader: fragmentShader
   };
@@ -10577,7 +10577,7 @@
     function MSDFTextMaterial() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       _classCallCheck(this, MSDFTextMaterial);
-      options = Object.assign(defaultOptions, options);
+      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions)), options);
       return _super.call(this, options);
     }
     return _createClass(MSDFTextMaterial);
@@ -11024,8 +11024,8 @@
           });
           material.uniforms.uMap.value = atlas;
           material.side = DoubleSide;
-          material.uniforms.uColor.value.set(config$1.settings.color);
-          material.uniforms.uStrokeColor.value.set(config$1.settings.strokeColor);
+          material.uniforms.uColor.value = new Color(config$1.settings.color);
+          material.uniforms.uStrokeColor.value = new Color(config$1.settings.strokeColor);
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
           var scale = 3;
@@ -11195,8 +11195,8 @@
           });
           material.uniforms.uMap.value = atlas;
           material.side = DoubleSide;
-          material.uniforms.uColor.value.set(config.settings.color);
-          material.uniforms.uStrokeColor.value.set(config.settings.strokeColor);
+          material.uniforms.uColor.value = new Color(config.settings.color);
+          material.uniforms.uStrokeColor.value = new Color(config.settings.strokeColor);
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
           var scale = 3;

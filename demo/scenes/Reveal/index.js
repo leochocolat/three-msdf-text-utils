@@ -1,5 +1,5 @@
 // THREE
-import { Scene, WebGLRenderer, PerspectiveCamera, TextureLoader, Mesh, DoubleSide, ShaderMaterial } from 'three';
+import { Scene, WebGLRenderer, PerspectiveCamera, TextureLoader, Mesh, DoubleSide, ShaderMaterial, Color } from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -88,8 +88,8 @@ export default class Reveal {
 
             material.uniforms.uMap.value = atlas;
             material.side = DoubleSide;
-            material.uniforms.uColor.value.set(config.settings.color);
-            material.uniforms.uStrokeColor.value.set(config.settings.strokeColor);
+            material.uniforms.uColor.value = new Color(config.settings.color);
+            material.uniforms.uStrokeColor.value = new Color(config.settings.strokeColor);
 
             const mesh = new Mesh(geometry, material);
             mesh.rotation.x = Math.PI;
