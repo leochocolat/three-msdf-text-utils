@@ -92,8 +92,7 @@ const geometry = new MSDFTextGeometry(options);
 
 -   `font` (required) the BMFont definition which holds chars, kernings, etc
 -   `text` (string) the text to layout. Newline characters (\n) will cause line breaks
--   `width` (number, optional) the desired width of the text box, causes word-wrapping and clipping in "pre" mode. Leave as undefined to remove
--   `word-wrapping` (default behaviour)
+-   `width` (number, optional) the desired width of the text box, causes word-wrapping and clipping in "pre" mode. Leave as undefined to remove word-wrapping (default behaviour)
 -   `mode` (string) a mode for word-wrapper; can be 'pre' (maintain spacing), or 'nowrap' (collapse whitespace but only break on newline characters), otherwise assumes normal word-wrap behaviour (collapse whitespace, break at width or newlines)
 -   `align` (string) can be "left", "center" or "right" (default: left)
 -   `letterSpacing` (number) the letter spacing in pixels (default: 0)
