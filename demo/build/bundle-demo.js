@@ -10067,12 +10067,16 @@
   function attributes(glyphs, texWidth, texHeight, flipY, layout) {
     var uvs = new Float32Array(glyphs.length * 4 * 2);
     var layoutUvs = new Float32Array(glyphs.length * 4 * 2);
+    var glyphUvs = new Float32Array(glyphs.length * 4 * 2);
+    var glyphResolution = new Float32Array(glyphs.length * 4 * 2);
     var positions = new Float32Array(glyphs.length * 4 * 2);
     var centers = new Float32Array(glyphs.length * 4 * 2);
     var i = 0;
     var j = 0;
     var k = 0;
     var l = 0;
+    var m = 0;
+    var n = 0;
     glyphs.forEach(function (glyph) {
       var bitmap = glyph.data;
 
@@ -10108,7 +10112,6 @@
       // BL
       layoutUvs[l++] = glyph.position[0] / layout.width;
       layoutUvs[l++] = (glyph.position[1] + layout.height) / layout.height;
-
       // TL
       layoutUvs[l++] = glyph.position[0] / layout.width;
       layoutUvs[l++] = (glyph.position[1] + layout.height + bitmap.height) / layout.height;
@@ -10118,6 +10121,36 @@
       // BR
       layoutUvs[l++] = (glyph.position[0] + bitmap.width) / layout.width;
       layoutUvs[l++] = (glyph.position[1] + layout.height) / layout.height;
+
+      // Glyph UV: Clean UV of quads
+
+      // BL
+      glyphUvs[m++] = 0;
+      glyphUvs[m++] = 1;
+      // TL
+      glyphUvs[m++] = 0;
+      glyphUvs[m++] = 0;
+      // TR
+      glyphUvs[m++] = 1;
+      glyphUvs[m++] = 0;
+      // BR
+      glyphUvs[m++] = 1;
+      glyphUvs[m++] = 1;
+
+      // Glyph Resolution
+
+      // BL
+      glyphResolution[n++] = bitmap.width;
+      glyphResolution[n++] = bitmap.height;
+      // TL
+      glyphResolution[n++] = bitmap.width;
+      glyphResolution[n++] = bitmap.height;
+      // TR
+      glyphResolution[n++] = bitmap.width;
+      glyphResolution[n++] = bitmap.height;
+      // BR
+      glyphResolution[n++] = bitmap.width;
+      glyphResolution[n++] = bitmap.height;
 
       // Positions, Centers
 
@@ -10158,7 +10191,9 @@
       uvs: uvs,
       layoutUvs: layoutUvs,
       positions: positions,
-      centers: centers
+      centers: centers,
+      glyphUvs: glyphUvs,
+      glyphResolution: glyphResolution
     };
   }
   function infos(glyphs, layout) {
@@ -10433,6 +10468,8 @@
         this.setAttribute('center', new BufferAttribute(attributes.centers, 2));
         this.setAttribute('uv', new BufferAttribute(attributes.uvs, 2));
         this.setAttribute('layoutUv', new BufferAttribute(attributes.layoutUvs, 2));
+        this.setAttribute('glyphUv', new BufferAttribute(attributes.glyphUvs, 2));
+        this.setAttribute('glyphResolution', new BufferAttribute(attributes.glyphResolution, 2));
 
         // this.setAttribute('linesTotal', new BufferAttribute(infos.linesTotal, 1)); // Use uniforms instead
         this.setAttribute('lineIndex', new BufferAttribute(infos.lineIndex, 1));
@@ -10778,7 +10815,7 @@
     }, {
       key: "loadResources",
       value: function loadResources() {
-        var promises = [this.loadFontAtlas('./fonts/clash-display/clash-display-regular.png'), this.loadFont('./fonts/clash-display/clash-display-regular.fnt')];
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
         return Promise.all(promises);
       }
     }, {
