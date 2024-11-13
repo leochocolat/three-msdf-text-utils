@@ -10778,7 +10778,7 @@
     }, {
       key: "loadResources",
       value: function loadResources() {
-        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        var promises = [this.loadFontAtlas('./fonts/clash-display/clash-display-regular.png'), this.loadFont('./fonts/clash-display/clash-display-regular.fnt')];
         return Promise.all(promises);
       }
     }, {

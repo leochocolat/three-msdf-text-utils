@@ -14,6 +14,8 @@ function pages(glyphs) {
 function attributes(glyphs, texWidth, texHeight, flipY, layout) {
     const uvs = new Float32Array(glyphs.length * 4 * 2);
     const layoutUvs = new Float32Array(glyphs.length * 4 * 2);
+    const glyphUvs = new Float32Array(glyphs.length * 4 * 2);
+    const glyphResolution = new Float32Array(glyphs.length * 4 * 2);
     const positions = new Float32Array(glyphs.length * 4 * 2);
     const centers = new Float32Array(glyphs.length * 4 * 2);
 
@@ -21,6 +23,8 @@ function attributes(glyphs, texWidth, texHeight, flipY, layout) {
     let j = 0;
     let k = 0;
     let l = 0;
+    let m = 0;
+    let n = 0;
 
     glyphs.forEach(function(glyph) {
         const bitmap = glyph.data;
@@ -58,7 +62,6 @@ function attributes(glyphs, texWidth, texHeight, flipY, layout) {
         // BL
         layoutUvs[l++] = glyph.position[0] / layout.width;
         layoutUvs[l++] = (glyph.position[1] + layout.height) / layout.height;
-
         // TL
         layoutUvs[l++] = glyph.position[0] / layout.width;
         layoutUvs[l++] = (glyph.position[1] + layout.height + bitmap.height) / layout.height;
@@ -68,6 +71,36 @@ function attributes(glyphs, texWidth, texHeight, flipY, layout) {
         // BR
         layoutUvs[l++] = (glyph.position[0] + bitmap.width) / layout.width;
         layoutUvs[l++] = (glyph.position[1] + layout.height) / layout.height;
+
+        // Glyph UV: Clean UV of quads
+
+        // BL
+        glyphUvs[m++] = 0;
+        glyphUvs[m++] = 1;
+        // TL
+        glyphUvs[m++] = 0;
+        glyphUvs[m++] = 0;
+        // TR
+        glyphUvs[m++] = 1;
+        glyphUvs[m++] = 0;
+        // BR
+        glyphUvs[m++] = 1;
+        glyphUvs[m++] = 1;
+
+        // Glyph Resolution
+
+        // BL
+        glyphResolution[n++] = bitmap.width;
+        glyphResolution[n++] = bitmap.height;
+        // TL
+        glyphResolution[n++] = bitmap.width;
+        glyphResolution[n++] = bitmap.height;
+        // TR
+        glyphResolution[n++] = bitmap.width;
+        glyphResolution[n++] = bitmap.height;
+        // BR
+        glyphResolution[n++] = bitmap.width;
+        glyphResolution[n++] = bitmap.height;
 
         // Positions, Centers
 
@@ -108,7 +141,7 @@ function attributes(glyphs, texWidth, texHeight, flipY, layout) {
         centers[k++] = y + h / 2;
     });
 
-    return { uvs, layoutUvs, positions, centers };
+    return { uvs, layoutUvs, positions, centers, glyphUvs, glyphResolution };
 }
 
 function infos(glyphs, layout) {

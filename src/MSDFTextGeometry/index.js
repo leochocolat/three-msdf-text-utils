@@ -80,6 +80,8 @@ export default class MSDFTextGeometry extends BufferGeometry {
         this.setAttribute('center', new BufferAttribute(attributes.centers, 2));
         this.setAttribute('uv', new BufferAttribute(attributes.uvs, 2));
         this.setAttribute('layoutUv', new BufferAttribute(attributes.layoutUvs, 2));
+        this.setAttribute('glyphUv', new BufferAttribute(attributes.glyphUvs, 2));
+        this.setAttribute('glyphResolution', new BufferAttribute(attributes.glyphResolution, 2));
 
         // this.setAttribute('linesTotal', new BufferAttribute(infos.linesTotal, 1)); // Use uniforms instead
         this.setAttribute('lineIndex', new BufferAttribute(infos.lineIndex, 1));
