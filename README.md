@@ -122,6 +122,25 @@ A filtered set from `geometry.layout.glyphs` intended to align with the vertex d
 
 This is an array of `{ line, position, index, data }` objects, [see here](https://github.com/Jam3/layout-bmfont-text#layoutglyphs). For example, this could be used to add a new BufferAttribute for `line` offset.
 
+#### Attributes
+
+Besides the basic geometry attributes. There are some text specific attributes, mostly useful for animation purposes.
+
+- `position`
+- `uv` : uv coordinates used to map the right letter in the right letter quad
+- `center` : center of each letter quad
+- `layoutUv` : uv coordinates of the full text block.
+- `glyphUv` : uv coordinates of each individual letter quad.
+- `glyphResolution` : resolution of each individual letter quad.
+- `lineIndex` : index of each line
+- `lineLettersTotal`: total amount of letters in each lines
+- `lineLetterIndex`: index of each letter by line
+- `lineWordsTotal`: total amount of words by line
+- `lineWordIndex`: index of each word by line
+- `wordIndex`: index of each word
+- `letterIndex`: index of each letter
+
+
 ### MSDFTextMaterial
 
 It extends from [Three.js ShaderMaterial](https://threejs.org/docs/#api/en/materials/ShaderMaterial)
