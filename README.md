@@ -340,6 +340,13 @@ const material = new THREE.ShaderMaterial({
 });
 material.uniforms.uMap.value = atlas;
 ```
+## Troubleshooting
+
+If after trying a basic implementation of msdf text rendering you can't see anything :
+- Check if the text mesh is facing the camera, you can try material.side = THREE.DoubleSide to identify if it's the issue.
+- Check the rotation of the mesh.
+- Check if the scale is consistent with your camera settings.
+- Check the near / far of the camera, the mesh might be frustum culled.
 
 ## Dependencies
 
