@@ -152,29 +152,6 @@ You can use it just by setting the atlas texture from your font :
 const material = new MSDFTextMaterial(options);
 material.uniforms.uMap.value = atlas;
 ```
-
-
-### MSDFTextNodeMaterial (WebGPU)
-
-It extends from Three.js WebGPU NodeMaterial
-
-```js
-const material = new MSDFTextNodeMaterial({ map: atlas, color: '#ff0000' });
-
-// Here no uniforms object, you can access materials properties directly.
-materials.strokeOutsetWidth = 0.2;
-materials.strokeInsetWidth = 0.2;
-materials.strokeColor = '#00ff00';
-```
-#### Properties
-
-- `color`: fill color
-- `strokeColor`: stroke color
-- `strokeOutsetWidth`: stroke size outside the glyph
-- `strokeInsetWidth`: stroke size inside the glyph
-- `isSmooth`: Switch render mode from sharp to smooth, useful for tiny fonts –– use only 0 or 1
-- `threshold`: smooth threshold (only used for isSmooth === 1)
-
 #### Initial Properties
 
 ```js
@@ -363,6 +340,28 @@ const material = new THREE.ShaderMaterial({
 });
 material.uniforms.uMap.value = atlas;
 ```
+
+### MSDFTextNodeMaterial (WebGPU)
+
+It extends from Three.js WebGPU NodeMaterial
+
+```js
+const material = new MSDFTextNodeMaterial({ map: atlas, color: '#ff0000' });
+
+// Here no uniforms object, you can access materials properties directly.
+materials.strokeOutsetWidth = 0.2;
+materials.strokeInsetWidth = 0.2;
+materials.strokeColor = '#00ff00';
+```
+#### Properties
+
+- `color`: fill color
+- `strokeColor`: stroke color
+- `strokeOutsetWidth`: stroke size outside the glyph
+- `strokeInsetWidth`: stroke size inside the glyph
+- `isSmooth`: Switch render mode from sharp to smooth, useful for tiny fonts –– use only 0 or 1
+- `threshold`: smooth threshold (only used for isSmooth === 1)
+
 ## Troubleshooting
 
 If after trying a basic implementation of msdf text rendering you can't see anything :
