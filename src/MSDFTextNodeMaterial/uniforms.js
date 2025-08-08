@@ -8,7 +8,7 @@ export default {
 
     // Rendering
     rendering: {
-        uThreshold: { value: 0.2 },
+        uThreshold: { value: 0.05 },
         uAlphaTest: { value: 0.01 },
     },
 

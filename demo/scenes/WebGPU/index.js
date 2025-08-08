@@ -1,5 +1,8 @@
+// THREE WEBGPU
+import { WebGPURenderer } from 'three/webgpu';
+
 // THREE
-import { Scene, WebGLRenderer, PerspectiveCamera, TextureLoader, Mesh, DoubleSide } from 'three';
+import { Scene, PerspectiveCamera, TextureLoader, Mesh, DoubleSide, Color } from 'three';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -7,12 +10,12 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Pane } from 'tweakpane';
 
 // Lib
-import { MSDFTextGeometry, MSDFTextMaterial } from '../../../src/index';
+import { MSDFTextGeometry, MSDFTextNodeMaterial } from '../../../src/index';
 
 // Config
 import config from './config';
 
-export default class Basic {
+export default class WebGPU {
     constructor() {
         this.canvas = document.querySelector('.js-canvas');
         this.renderer = null;
@@ -34,8 +37,9 @@ export default class Basic {
         this.camera.position.z = 1000;
 
         this.scene = new Scene();
+        this.scene.background = new Color('black');
 
-        this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true });
+        this.renderer = new WebGPURenderer({ antialias: true, canvas: this.canvas });
         this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
         this.renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -58,27 +62,25 @@ export default class Basic {
                 align: 'center',
             });
 
-            const material = new MSDFTextMaterial();
-            material.uniforms.uMap.value = atlas;
+            const material = new MSDFTextNodeMaterial({ map: atlas });
             material.side = DoubleSide;
 
             const mesh = new Mesh(geometry, material);
             mesh.rotation.x = Math.PI;
             const scale = 3;
             mesh.position.x = -geometry.layout.width / 2 * scale;
-            mesh.position.y = -geometry.layout.height / 2 * scale;
             mesh.scale.set(scale, scale, scale);
             this.scene.add(mesh);
 
             // Debug
             const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
-            debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
-            debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
+            debugFolderCommon.addInput(material.opacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+            debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { material.color.value.set(config.settings.color); });
 
             const debugFolderRendering = this.debugger.addFolder({ title: 'Rendering' });
-            debugFolderRendering.addInput(material.defines, 'IS_SMALL', { label: 'Is small' }).on('change', () => { material.needsUpdate = true; });
-            debugFolderRendering.addInput(material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
-            debugFolderRendering.addInput(material.uniforms.uThreshold, 'value', { label: 'Threshold (IS_SMALL)', min: 0, max: 1 });
+            debugFolderRendering.addInput(material.isSmooth, 'value', { label: 'Is Smooth', options: [{ text: 'False', value: 0 }, { text: 'True', value: 1 }] });
+            debugFolderRendering.addInput(material, 'alphaTest', { label: 'Alpha test', min: 0, max: 1 });
+            debugFolderRendering.addInput(material.threshold, 'value', { label: 'Threshold (isSmooth)', min: 0, max: 1 });
         });
     }
 
@@ -101,7 +103,7 @@ export default class Basic {
     }
 
     render() {
-        this.renderer.render(this.scene, this.camera);
+        this.renderer.renderAsync(this.scene, this.camera);
     }
 
     update() {
@@ -117,6 +119,7 @@ export default class Basic {
     resizeHandler() {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 }

@@ -11,6 +11,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   Replace some deprecated three.js code
 -   Add more geometry attributes : layout uv, letter center positions, letter index, line index, letter index by line, word index, word index by line...
 -   Compatibility check with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
+-   WebGPU MSDFTextNodeMaterial
 -   More to come...
 
 ## Demo
@@ -19,7 +20,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   [Stroke](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=stroke)
 -   [Editor](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=editor)
 -   [Reveal](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=reveal)
--   More to come...
+-   [WebGPU](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=webgpu)
 
 ## Bitmap Font and Font Atlas
 
@@ -151,6 +152,28 @@ You can use it just by setting the atlas texture from your font :
 const material = new MSDFTextMaterial(options);
 material.uniforms.uMap.value = atlas;
 ```
+
+
+### MSDFTextNodeMaterial (WebGPU)
+
+It extends from Three.js WebGPU NodeMaterial
+
+```js
+const material = new MSDFTextNodeMaterial({ map: atlas, color: '#ff0000' });
+
+// Here no uniforms object, you can access materials properties directly.
+materials.strokeOutsetWidth = 0.2;
+materials.strokeInsetWidth = 0.2;
+materials.strokeColor = '#00ff00';
+```
+#### Properties
+
+- `color`: fill color
+- `strokeColor`: stroke color
+- `strokeOutsetWidth`: stroke size outside the glyph
+- `strokeInsetWidth`: stroke size inside the glyph
+- `isSmooth`: Switch render mode from sharp to smooth, useful for tiny fonts –– use only 0 or 1
+- `threshold`: smooth threshold (only used for isSmooth === 1)
 
 #### Initial Properties
 
@@ -363,10 +386,3 @@ npm install
 ```bash
 npm run dev
 ```
-
-## Roadmap
-
--   More examples
--   More docs for custom shader material
--   Manage versions
--   NPM Publish workflow
