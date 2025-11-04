@@ -3,6 +3,7 @@
   "version": "1.2.1",
   "description": "",
   "main": "build/bundle.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "dev": "rollup --config ./rollup.dev.config.js --watch",
     "build": "rollup --config ./rollup.build.config.js",
