@@ -3,13 +3,7 @@
 [![npm](https://img.shields.io/npm/v/three-msdf-text-utils.svg)](https://www.npmjs.com/package/three-msdf-text-utils)
 [![downloads](https://img.shields.io/npm/dm/three-msdf-text-utils.svg)](https://www.npmjs.com/package/three-msdf-text-utils)
 
-<a href="https://threejsresources.com/tool/three-msdf-text" target="_blank" style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; background-color: #ffffff; border: 1px solid #e5e5e5; border-radius: 8px; text-decoration: none; font-family: sans-serif; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s ease;">
-  <img src="https://threejsresources.com/logo.svg" alt="Three.js Resources Logo" style="width: 20px; height: 20px; object-fit: contain;" />
-  <div style="display: flex; flex-direction: column; line-height: 1.1;">
-    <span style="color: #000000; font-weight: 400; font-size: 10px;">Featured on</span>
-    <span style="color: #000000; font-weight: 600; font-size: 12px;">Three.js Resources</span>
-  </div>
-</a>
+[![Featured on Three.js Resources](https://img.shields.io/badge/Featured%20on-Three.js%20Resources-7871ff?labelColor=7871ff&style=flat&logoColor=black&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzMzIiBoZWlnaHQ9IjM3NSIgdmlld0JveD0iMCAwIDMzMyAzNzUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNzAuNDY2IDI5Ni4xNDRMMzkuMTExMiAzNzAuNjU0QzIxLjU3NTUgMzgwLjYwMiAtMC4xNTI3MTIgMzY3LjgzNiAwLjAwMDgwODk0OSAzNDcuNjc2TDEuMTIzODYgMjAwLjA4NUwxNzAuNDY2IDI5Ni4xNDRaTTE4MC42NTcgMjkwLjM2MkwxODAuNiAyOTAuMzk1TDEuNTUzNTQgMTg4LjgzMkwxNzkuMDkxIDg0LjUyMTVMMTgwLjY1NyAyOTAuMzYyWk0zMTkuMjM0IDE2Ni41OTFDMzM2LjYxNyAxNzYuODA0IDMzNi40MjUgMjAyLjAwNCAzMTguODg5IDIxMS45NTFMMTkwLjYxNSAyODQuNzE0TDE4OS4xMzQgOTAuMTUwNEwzMTkuMjM0IDE2Ni41OTFaTTIuNDQ5MDUgMjYuMDI5M0MyLjYwMjYyIDUuODY5NTIgMjQuNTIxNCAtNi41NjUwNyA0MS45MDQxIDMuNjQ3NUwxNjkuNDUyIDc4LjU4N0wxLjI5NjcxIDE3Ny4zODVMMi40NDkwNSAyNi4wMjkzWiIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K)](https://threejsresources.com/tool/three-msdf-text)
 
 Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (multi-channel signed distance fields).
 
@@ -18,6 +12,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 **It includes :**
 
 -   Refacto to ES6
+
 -   Remove some small old dependencies
 -   Replace some deprecated three.js code
 -   Add more geometry attributes : layout uv, letter center positions, letter index, line index, letter index by line, word index, word index by line...
