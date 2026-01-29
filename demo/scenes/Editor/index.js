@@ -77,27 +77,27 @@ export default class Editor {
     }
 
     setupDebugger() {
-        this.debugger.addInput(config, 'text', { title: 'Text' }).on('change', () => { this.updateText(); });
-        this.debugger.addInput(config.settings, 'scale', { title: 'Scale' }).on('change', () => { this.updateText(); });
+        this.debugger.addBinding(config, 'text', { title: 'Text' }).on('change', () => { this.updateText(); });
+        this.debugger.addBinding(config.settings, 'scale', { title: 'Scale' }).on('change', () => { this.updateText(); });
 
         // Properties
         const debugFolderProperties = this.debugger.addFolder({ title: 'Properties' });
-        debugFolderProperties.addInput(config.properties, 'width').on('change', () => { this.updateText(); });
-        debugFolderProperties.addInput(config.properties, 'align', { options: { left: 'left', center: 'center', right: 'right' } }).on('change', () => { this.updateText(); });
-        debugFolderProperties.addInput(config.properties, 'letterSpacing', { label: 'letter spacing' }).on('change', () => { this.updateText(); });
-        debugFolderProperties.addInput(config.properties, 'lineHeight', { label: 'line height' }).on('change', () => { this.updateText(); });
+        debugFolderProperties.addBinding(config.properties, 'width').on('change', () => { this.updateText(); });
+        debugFolderProperties.addBinding(config.properties, 'align', { options: { left: 'left', center: 'center', right: 'right' } }).on('change', () => { this.updateText(); });
+        debugFolderProperties.addBinding(config.properties, 'letterSpacing', { label: 'letter spacing' }).on('change', () => { this.updateText(); });
+        debugFolderProperties.addBinding(config.properties, 'lineHeight', { label: 'line height' }).on('change', () => { this.updateText(); });
 
         // Material
         const debugFolderMaterial = this.debugger.addFolder({ title: 'Material' });
 
         const debugFolderCommon = debugFolderMaterial.addFolder({ title: 'Common' });
-        debugFolderCommon.addInput(this.material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
-        debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { this.material.uniforms.uColor.value.set(config.settings.color); });
+        debugFolderCommon.addBinding(this.material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+        debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { this.material.uniforms.uColor.value.set(config.settings.color); });
 
         const debugFolderRendering = debugFolderMaterial.addFolder({ title: 'Rendering' });
-        debugFolderRendering.addInput(this.material.defines, 'IS_SMALL', { label: 'Is small' }).on('change', () => { this.material.needsUpdate = true; });
-        debugFolderRendering.addInput(this.material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
-        debugFolderRendering.addInput(this.material.uniforms.uThreshold, 'value', { label: 'Threshold (IS_SMALL)', min: 0, max: 1 });
+        debugFolderRendering.addBinding(this.material.defines, 'IS_SMALL', { label: 'Is small' }).on('change', () => { this.material.needsUpdate = true; });
+        debugFolderRendering.addBinding(this.material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
+        debugFolderRendering.addBinding(this.material.uniforms.uThreshold, 'value', { label: 'Threshold (IS_SMALL)', min: 0, max: 1 });
     }
 
     updateText() {

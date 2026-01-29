@@ -74,13 +74,13 @@ export default class WebGPU {
 
             // Debug
             const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
-            debugFolderCommon.addInput(material.opacity, 'value', { label: 'Opacity', min: 0, max: 1 });
-            debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { material.color.value.set(config.settings.color); });
+            debugFolderCommon.addBinding(material.opacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+            debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { material.color.value.set(config.settings.color); });
 
             const debugFolderRendering = this.debugger.addFolder({ title: 'Rendering' });
-            debugFolderRendering.addInput(material.isSmooth, 'value', { label: 'Is Smooth', options: [{ text: 'False', value: 0 }, { text: 'True', value: 1 }] });
-            debugFolderRendering.addInput(material, 'alphaTest', { label: 'Alpha test', min: 0, max: 1 });
-            debugFolderRendering.addInput(material.threshold, 'value', { label: 'Threshold (isSmooth)', min: 0, max: 1 });
+            debugFolderRendering.addBinding(material.isSmooth, 'value', { label: 'Is Smooth', options: [{ text: 'False', value: 0 }, { text: 'True', value: 1 }] });
+            debugFolderRendering.addBinding(material, 'alphaTest', { label: 'Alpha test', min: 0, max: 1 });
+            debugFolderRendering.addBinding(material.threshold, 'value', { label: 'Threshold (isSmooth)', min: 0, max: 1 });
         });
     }
 

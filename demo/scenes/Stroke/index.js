@@ -97,12 +97,12 @@ export default class Stroke {
 
             // Debug
             const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
-            debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
-            debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
+            debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+            debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
 
             const debugFolderStrokes = this.debugger.addFolder({ title: 'Strokes' });
-            debugFolderStrokes.addInput(config.settings, 'strokeColor', { label: 'Color' }).on('change', () => { material.uniforms.uStrokeColor.value.set(config.settings.strokeColor); });
-            debugFolderStrokes.addInput(material.uniforms.uStrokeInsetWidth, 'value', { label: 'Inset width', min: 0, max: 1 });
+            debugFolderStrokes.addBinding(config.settings, 'strokeColor', { label: 'Color' }).on('change', () => { material.uniforms.uStrokeColor.value.set(config.settings.strokeColor); });
+            debugFolderStrokes.addBinding(material.uniforms.uStrokeInsetWidth, 'value', { label: 'Inset width', min: 0, max: 1 });
         });
     }
 

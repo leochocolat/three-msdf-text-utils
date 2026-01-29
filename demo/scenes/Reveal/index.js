@@ -100,8 +100,8 @@ export default class Reveal {
 
             // Debug
             const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
-            debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
-            debugFolderCommon.addInput(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
+            debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+            debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
         });
     }
 
