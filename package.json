@@ -1,6 +1,6 @@
 {
   "name": "three-msdf-text-utils",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Utility classes for text rendering in Three.js using MSDF (multi-channel signed distance fields) and bitmap fonts. Includes geometry with rich attributes for animations and WebGPU support.",
   "keywords": [
     "three",
