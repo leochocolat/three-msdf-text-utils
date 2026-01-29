@@ -3,6 +3,14 @@
 [![npm](https://img.shields.io/npm/v/three-msdf-text-utils.svg)](https://www.npmjs.com/package/three-msdf-text-utils)
 [![downloads](https://img.shields.io/npm/dm/three-msdf-text-utils.svg)](https://www.npmjs.com/package/three-msdf-text-utils)
 
+<a href="https://threejsresources.com/tool/three-msdf-text" target="_blank" style="display: inline-flex; align-items: center; gap: 10px; padding: 6px 12px; background-color: #ffffff; border: 1px solid #e5e5e5; border-radius: 8px; text-decoration: none; font-family: sans-serif; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s ease;">
+  <img src="https://threejsresources.com/logo.svg" alt="Three.js Resources Logo" style="width: 20px; height: 20px; object-fit: contain;" />
+  <div style="display: flex; flex-direction: column; line-height: 1.1;">
+    <span style="color: #000000; font-weight: 400; font-size: 10px;">Featured on</span>
+    <span style="color: #000000; font-weight: 600; font-size: 12px;">Three.js Resources</span>
+  </div>
+</a>
+
 Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (multi-channel signed distance fields).
 
 Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
