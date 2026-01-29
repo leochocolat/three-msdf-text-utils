@@ -3,6 +3,7 @@
   "version": "1.2.1",
   "description": "",
   "main": "build/bundle.js",
+  "types": "./types/index.d.ts",
   "scripts": {
     "dev": "rollup --config ./rollup.dev.config.js --watch",
     "build": "rollup --config ./rollup.build.config.js",
@@ -27,6 +28,7 @@
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
+    "@types/three": "^0.178.0",
     "@rollup/plugin-terser": "^0.4.4",
     "eslint": "^9.38.0",
     "eslint-plugin-import": "^2.32.0",
