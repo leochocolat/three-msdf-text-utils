@@ -7,3 +7,45 @@ html, body {
     left: 0;
     top: 0;
 }
+
+.npm-badge {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    display: flex;
+    gap: 4px;
+}
+
+.npm-badge img {
+    display: block;
+    height: 20px;
+}
+
+.source-link {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 48px;
+    height: 48px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    color: #333;
+    text-decoration: none;
+    transition: box-shadow 0.2s, transform 0.2s;
+    z-index: 1000;
+}
+
+.source-link svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* .source-link:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transform: scale(1.05);
+} */

@@ -47198,12 +47198,12 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderCommon = _this.debugger.addFolder({
             title: 'Common'
           });
-          debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', {
+          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
             label: 'Opacity',
             min: 0,
             max: 1
           });
-          debugFolderCommon.addInput(config$4.settings, 'color', {
+          debugFolderCommon.addBinding(config$4.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
             material.uniforms.uColor.value.set(config$4.settings.color);
@@ -47211,17 +47211,17 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderRendering = _this.debugger.addFolder({
             title: 'Rendering'
           });
-          debugFolderRendering.addInput(material.defines, 'IS_SMALL', {
+          debugFolderRendering.addBinding(material.defines, 'IS_SMALL', {
             label: 'Is small'
           }).on('change', function () {
             material.needsUpdate = true;
           });
-          debugFolderRendering.addInput(material.uniforms.uAlphaTest, 'value', {
+          debugFolderRendering.addBinding(material.uniforms.uAlphaTest, 'value', {
             label: 'Alpha test',
             min: 0,
             max: 1
           });
-          debugFolderRendering.addInput(material.uniforms.uThreshold, 'value', {
+          debugFolderRendering.addBinding(material.uniforms.uThreshold, 'value', {
             label: 'Threshold (IS_SMALL)',
             min: 0,
             max: 1
@@ -47358,12 +47358,12 @@ var<${access}> ${name} : ${structName};`;}}/**
       key: "setupDebugger",
       value: function setupDebugger() {
         var _this2 = this;
-        this.debugger.addInput(config$3, 'text', {
+        this.debugger.addBinding(config$3, 'text', {
           title: 'Text'
         }).on('change', function () {
           _this2.updateText();
         });
-        this.debugger.addInput(config$3.settings, 'scale', {
+        this.debugger.addBinding(config$3.settings, 'scale', {
           title: 'Scale'
         }).on('change', function () {
           _this2.updateText();
@@ -47373,10 +47373,10 @@ var<${access}> ${name} : ${structName};`;}}/**
         var debugFolderProperties = this.debugger.addFolder({
           title: 'Properties'
         });
-        debugFolderProperties.addInput(config$3.properties, 'width').on('change', function () {
+        debugFolderProperties.addBinding(config$3.properties, 'width').on('change', function () {
           _this2.updateText();
         });
-        debugFolderProperties.addInput(config$3.properties, 'align', {
+        debugFolderProperties.addBinding(config$3.properties, 'align', {
           options: {
             left: 'left',
             center: 'center',
@@ -47385,12 +47385,12 @@ var<${access}> ${name} : ${structName};`;}}/**
         }).on('change', function () {
           _this2.updateText();
         });
-        debugFolderProperties.addInput(config$3.properties, 'letterSpacing', {
+        debugFolderProperties.addBinding(config$3.properties, 'letterSpacing', {
           label: 'letter spacing'
         }).on('change', function () {
           _this2.updateText();
         });
-        debugFolderProperties.addInput(config$3.properties, 'lineHeight', {
+        debugFolderProperties.addBinding(config$3.properties, 'lineHeight', {
           label: 'line height'
         }).on('change', function () {
           _this2.updateText();
@@ -47403,12 +47403,12 @@ var<${access}> ${name} : ${structName};`;}}/**
         var debugFolderCommon = debugFolderMaterial.addFolder({
           title: 'Common'
         });
-        debugFolderCommon.addInput(this.material.uniforms.uOpacity, 'value', {
+        debugFolderCommon.addBinding(this.material.uniforms.uOpacity, 'value', {
           label: 'Opacity',
           min: 0,
           max: 1
         });
-        debugFolderCommon.addInput(config$3.settings, 'color', {
+        debugFolderCommon.addBinding(config$3.settings, 'color', {
           label: 'Color'
         }).on('change', function () {
           _this2.material.uniforms.uColor.value.set(config$3.settings.color);
@@ -47416,17 +47416,17 @@ var<${access}> ${name} : ${structName};`;}}/**
         var debugFolderRendering = debugFolderMaterial.addFolder({
           title: 'Rendering'
         });
-        debugFolderRendering.addInput(this.material.defines, 'IS_SMALL', {
+        debugFolderRendering.addBinding(this.material.defines, 'IS_SMALL', {
           label: 'Is small'
         }).on('change', function () {
           _this2.material.needsUpdate = true;
         });
-        debugFolderRendering.addInput(this.material.uniforms.uAlphaTest, 'value', {
+        debugFolderRendering.addBinding(this.material.uniforms.uAlphaTest, 'value', {
           label: 'Alpha test',
           min: 0,
           max: 1
         });
-        debugFolderRendering.addInput(this.material.uniforms.uThreshold, 'value', {
+        debugFolderRendering.addBinding(this.material.uniforms.uThreshold, 'value', {
           label: 'Threshold (IS_SMALL)',
           min: 0,
           max: 1
@@ -47577,12 +47577,12 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderCommon = _this.debugger.addFolder({
             title: 'Common'
           });
-          debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', {
+          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
             label: 'Opacity',
             min: 0,
             max: 1
           });
-          debugFolderCommon.addInput(config$2.settings, 'color', {
+          debugFolderCommon.addBinding(config$2.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
             material.uniforms.uColor.value.set(config$2.settings.color);
@@ -47590,12 +47590,12 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderStrokes = _this.debugger.addFolder({
             title: 'Strokes'
           });
-          debugFolderStrokes.addInput(config$2.settings, 'strokeColor', {
+          debugFolderStrokes.addBinding(config$2.settings, 'strokeColor', {
             label: 'Color'
           }).on('change', function () {
             material.uniforms.uStrokeColor.value.set(config$2.settings.strokeColor);
           });
-          debugFolderStrokes.addInput(material.uniforms.uStrokeInsetWidth, 'value', {
+          debugFolderStrokes.addBinding(material.uniforms.uStrokeInsetWidth, 'value', {
             label: 'Inset width',
             min: 0,
             max: 1
@@ -47747,12 +47747,12 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderCommon = _this.debugger.addFolder({
             title: 'Common'
           });
-          debugFolderCommon.addInput(material.uniforms.uOpacity, 'value', {
+          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
             label: 'Opacity',
             min: 0,
             max: 1
           });
-          debugFolderCommon.addInput(config$1.settings, 'color', {
+          debugFolderCommon.addBinding(config$1.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
             material.uniforms.uColor.value.set(config$1.settings.color);
@@ -47878,12 +47878,12 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderCommon = _this.debugger.addFolder({
             title: 'Common'
           });
-          debugFolderCommon.addInput(material.opacity, 'value', {
+          debugFolderCommon.addBinding(material.opacity, 'value', {
             label: 'Opacity',
             min: 0,
             max: 1
           });
-          debugFolderCommon.addInput(config.settings, 'color', {
+          debugFolderCommon.addBinding(config.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
             material.color.value.set(config.settings.color);
@@ -47891,7 +47891,7 @@ var<${access}> ${name} : ${structName};`;}}/**
           var debugFolderRendering = _this.debugger.addFolder({
             title: 'Rendering'
           });
-          debugFolderRendering.addInput(material.isSmooth, 'value', {
+          debugFolderRendering.addBinding(material.isSmooth, 'value', {
             label: 'Is Smooth',
             options: [{
               text: 'False',
@@ -47901,12 +47901,12 @@ var<${access}> ${name} : ${structName};`;}}/**
               value: 1
             }]
           });
-          debugFolderRendering.addInput(material, 'alphaTest', {
+          debugFolderRendering.addBinding(material, 'alphaTest', {
             label: 'Alpha test',
             min: 0,
             max: 1
           });
-          debugFolderRendering.addInput(material.threshold, 'value', {
+          debugFolderRendering.addBinding(material.threshold, 'value', {
             label: 'Threshold (isSmooth)',
             min: 0,
             max: 1
@@ -47966,9 +47966,23 @@ var<${access}> ${name} : ${structName};`;}}/**
     webgpu: WebGPU
   };
 
+  var GITHUB_BASE_URL = 'https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes';
+  var sceneNameMap = {
+    basic: 'Basic',
+    stroke: 'Stroke',
+    editor: 'Editor',
+    reveal: 'Reveal',
+    webgpu: 'WebGPU'
+  };
   var urlParams = new URLSearchParams(location.search);
   var demoName = urlParams.get('demo') || '';
-  var scene = scenes[demoName.toLowerCase()] ? new scenes[demoName.toLowerCase()]() : new scenes.basic();
+  var sceneKey = scenes[demoName.toLowerCase()] ? demoName.toLowerCase() : 'basic';
+  var scene = new scenes[sceneKey]();
   scene.start();
+
+  // Set source link
+  var sourceLink = document.getElementById('source-link');
+  var folderName = sceneNameMap[sceneKey];
+  sourceLink.href = "".concat(GITHUB_BASE_URL, "/").concat(folderName, "/index.js");
 
 }));

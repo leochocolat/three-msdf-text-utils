@@ -1,5 +1,8 @@
 # Three MSDF Text
 
+[![npm](https://img.shields.io/npm/v/three-msdf-text-utils.svg)](https://www.npmjs.com/package/three-msdf-text-utils)
+[![downloads](https://img.shields.io/npm/dm/three-msdf-text-utils.svg)](https://www.npmjs.com/package/three-msdf-text-utils)
+
 Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (multi-channel signed distance fields).
 
 Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).

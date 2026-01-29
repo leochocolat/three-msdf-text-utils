@@ -1,7 +1,24 @@
 {
   "name": "three-msdf-text-utils",
   "version": "1.3.1",
-  "description": "",
+  "description": "Utility classes for text rendering in Three.js using MSDF (multi-channel signed distance fields) and bitmap fonts. Includes geometry with rich attributes for animations and WebGPU support.",
+  "keywords": [
+    "three",
+    "threejs",
+    "three.js",
+    "msdf",
+    "sdf",
+    "text",
+    "font",
+    "bitmap-font",
+    "webgl",
+    "webgpu",
+    "signed-distance-field",
+    "text-rendering",
+    "3d-text",
+    "shader",
+    "glsl"
+  ],
   "main": "build/bundle.js",
   "types": "./types/index.d.ts",
   "scripts": {
@@ -13,7 +30,7 @@
     "type": "git",
     "url": "git+https://github.com/leochocolat/three-msdf-text-utils.git"
   },
-  "author": "",
+  "author": "leochocolat",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/leochocolat/three-msdf-text-utils/issues"
