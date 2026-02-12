@@ -18,6 +18,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   Add more geometry attributes : layout uv, letter center positions, letter index, line index, letter index by line, word index, word index by line...
 -   Compatibility check with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
 -   WebGPU MSDFTextNodeMaterial
+-   In browser bitmap font and MSDF atlas generation from ttf font files
 -   More to come... maybe...
 
 ## Demo
@@ -27,11 +28,38 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 -   [Editor](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=editor)
 -   [Reveal](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=reveal)
 -   [WebGPU](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=webgpu)
+-   [MSDF Generator on the browser](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator)
 
 ## Bitmap Font and Font Atlas
 
-To get this working you will need some specific files, you can generate them with [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml) or with the [online tool](https://msdf-bmfont.donmccurdy.com/).
+MSDF Font rendering needs Bitmap font data and MSDF (or SDF) font atlas. For the best control on quality and file size it's always best to pre-generate those files, but this library now also includes a way to generate them on the fly at runtime on the browser
+
+## Bitmap and Atlas pre-generation
+
+You can use [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml) or with the [online tool](https://msdf-bmfont.donmccurdy.com/).
+
 You can also check my [msdf-font-factory](https://github.com/leochocolat/msdf-font-factory) it already includes some files that you can use and a script to generate your files easily.
+
+## Bitmap and Atlas Generation within the browser
+
+From a fork from [@zappar/msdf-generator](https://www.npmjs.com/package/@zappar/msdf-generator) I added the `generateMSDF` method that lets you generate the bitmap font and atlas texture needed for MSDF Font rendering.
+
+You'll need to download the worker and wasm files and put them in your project public folder. Download them [here](https://github.com/leochocolat/three-msdf-text-utils/tree/main/demo)
+
+```js
+import { generateMSDF } from "three-msdf-text-utils";
+
+generateMSDF(config.fontUrl, {
+    workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js', // Replace by your own path
+    wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm', // Replace by your own path
+}).then(({ font, atlas }) => {
+    // Create your text
+}).catch((error) => {
+    // Handle error
+});
+```
+
+Check [This demo](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator) and [Source code]()
 
 ## Installation
 
@@ -378,9 +406,11 @@ If after trying a basic implementation of msdf text rendering you can't see anyt
 
 ## Dependencies
 
+-   [comlink](https://www.npmjs.com/package/comlink)
 -   [quad-indices](https://www.npmjs.com/package/quad-indices)
 -   [word-wrapper](https://www.npmjs.com/package/word-wrapper)
 -   [three.js](https://www.npmjs.com/package/three) (peer dependency)
+
 
 ## Development
 

@@ -5,6 +5,7 @@
   factory();
 })((function () { 'use strict';
 
+  var _documentCurrentScript = typeof document !== 'undefined' ? document.currentScript : null;
   function _arrayLikeToArray(r, a) {
     (null == a || a > r.length) && (a = r.length);
     for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
@@ -16,6 +17,31 @@
   function _assertThisInitialized(e) {
     if (void 0 === e) throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
     return e;
+  }
+  function asyncGeneratorStep(n, t, e, r, o, a, c) {
+    try {
+      var i = n[a](c),
+        u = i.value;
+    } catch (n) {
+      return void e(n);
+    }
+    i.done ? t(u) : Promise.resolve(u).then(r, o);
+  }
+  function _asyncToGenerator(n) {
+    return function () {
+      var t = this,
+        e = arguments;
+      return new Promise(function (r, o) {
+        var a = n.apply(t, e);
+        function _next(n) {
+          asyncGeneratorStep(a, r, o, _next, _throw, "next", n);
+        }
+        function _throw(n) {
+          asyncGeneratorStep(a, r, o, _next, _throw, "throw", n);
+        }
+        _next(void 0);
+      });
+    };
   }
   function _callSuper(t, o, e) {
     return o = _getPrototypeOf(o), _possibleConstructorReturn(t, _isNativeReflectConstruct() ? Reflect.construct(o, e || [], _getPrototypeOf(t).constructor) : o.apply(t, e));
@@ -119,6 +145,114 @@
     if (e && ("object" == typeof e || "function" == typeof e)) return e;
     if (void 0 !== e) throw new TypeError("Derived constructors may only return object or undefined");
     return _assertThisInitialized(t);
+  }
+  function _regenerator() {
+    /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
+    var e,
+      t,
+      r = "function" == typeof Symbol ? Symbol : {},
+      n = r.iterator || "@@iterator",
+      o = r.toStringTag || "@@toStringTag";
+    function i(r, n, o, i) {
+      var c = n && n.prototype instanceof Generator ? n : Generator,
+        u = Object.create(c.prototype);
+      return _regeneratorDefine(u, "_invoke", function (r, n, o) {
+        var i,
+          c,
+          u,
+          f = 0,
+          p = o || [],
+          y = false,
+          G = {
+            p: 0,
+            n: 0,
+            v: e,
+            a: d,
+            f: d.bind(e, 4),
+            d: function (t, r) {
+              return i = t, c = 0, u = e, G.n = r, a;
+            }
+          };
+        function d(r, n) {
+          for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) {
+            var o,
+              i = p[t],
+              d = G.p,
+              l = i[2];
+            r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0));
+          }
+          if (o || r > 1) return a;
+          throw y = true, n;
+        }
+        return function (o, p, l) {
+          if (f > 1) throw TypeError("Generator is already running");
+          for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) {
+            i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u);
+            try {
+              if (f = 2, i) {
+                if (c || (o = "next"), t = i[o]) {
+                  if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object");
+                  if (!t.done) return t;
+                  u = t.value, c < 2 && (c = 0);
+                } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1);
+                i = e;
+              } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break;
+            } catch (t) {
+              i = e, c = 1, u = t;
+            } finally {
+              f = 1;
+            }
+          }
+          return {
+            value: t,
+            done: y
+          };
+        };
+      }(r, o, i), true), u;
+    }
+    var a = {};
+    function Generator() {}
+    function GeneratorFunction() {}
+    function GeneratorFunctionPrototype() {}
+    t = Object.getPrototypeOf;
+    var c = [][n] ? t(t([][n]())) : (_regeneratorDefine(t = {}, n, function () {
+        return this;
+      }), t),
+      u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c);
+    function f(e) {
+      return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e;
+    }
+    return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine(u), _regeneratorDefine(u, o, "Generator"), _regeneratorDefine(u, n, function () {
+      return this;
+    }), _regeneratorDefine(u, "toString", function () {
+      return "[object Generator]";
+    }), (_regenerator = function () {
+      return {
+        w: i,
+        m: f
+      };
+    })();
+  }
+  function _regeneratorDefine(e, r, n, t) {
+    var i = Object.defineProperty;
+    try {
+      i({}, "", {});
+    } catch (e) {
+      i = 0;
+    }
+    _regeneratorDefine = function (e, r, n, t) {
+      function o(r, n) {
+        _regeneratorDefine(e, r, function (e) {
+          return this._invoke(r, n, e);
+        });
+      }
+      r ? i ? i(e, r, {
+        value: n,
+        enumerable: !t,
+        configurable: !t,
+        writable: !t
+      }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2));
+    }, _regeneratorDefine(e, r, n, t);
   }
   function _setPrototypeOf(t, e) {
     return _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function (t, e) {
@@ -1104,7 +1238,7 @@
    * (universally unique identifier).
    *
    * @return {string} The UUID.
-   */function generateUUID(){// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/21963136#21963136
+   */function generateUUID$1(){// http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/21963136#21963136
   const d0=Math.random()*0xffffffff|0;const d1=Math.random()*0xffffffff|0;const d2=Math.random()*0xffffffff|0;const d3=Math.random()*0xffffffff|0;const uuid=_lut[d0&0xff]+_lut[d0>>8&0xff]+_lut[d0>>16&0xff]+_lut[d0>>24&0xff]+'-'+_lut[d1&0xff]+_lut[d1>>8&0xff]+'-'+_lut[d1>>16&0x0f|0x40]+_lut[d1>>24&0xff]+'-'+_lut[d2&0x3f|0x80]+_lut[d2>>8&0xff]+'-'+_lut[d2>>16&0xff]+_lut[d2>>24&0xff]+_lut[d3&0xff]+_lut[d3>>8&0xff]+_lut[d3>>16&0xff]+_lut[d3>>24&0xff];// .toLowerCase() here flattens concatenated strings to save heap memory space.
   return uuid.toLowerCase();}/**
    * Clamps the given value between min and max.
@@ -1268,7 +1402,7 @@
   	 * @static
   	 * @method
   	 * @return {string} The UUID.
-  	 */generateUUID:generateUUID,/**
+  	 */generateUUID:generateUUID$1,/**
   	 * Clamps the given value between min and max.
   	 *
   	 * @static
@@ -2773,7 +2907,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();/**
+  		 */this.uuid=generateUUID$1();/**
   		 * The data definition of a texture.
   		 *
   		 * @type {any}
@@ -2851,7 +2985,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();/**
+  		 */this.uuid=generateUUID$1();/**
   		 * The name of the material.
   		 *
   		 * @type {string}
@@ -4919,7 +5053,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();/**
+  		 */this.uuid=generateUUID$1();/**
   		 * The name of the 3D object.
   		 *
   		 * @type {string}
@@ -5932,7 +6066,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();/**
+  		 */this.uuid=generateUUID$1();/**
   		 * The name of the material.
   		 *
   		 * @type {string}
@@ -6798,7 +6932,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();/**
+  		 */this.uuid=generateUUID$1();/**
   		 * The name of the geometry.
   		 *
   		 * @type {string}
@@ -8010,7 +8144,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();}/**
+  		 */this.uuid=generateUUID$1();}/**
   	 * A callback function that is executed after the renderer has transferred the attribute array
   	 * data to the GPU.
   	 */onUploadCallback(){}/**
@@ -8057,7 +8191,7 @@
   	 *
   	 * @param {Object} [data] - An object with shared array buffers that allows to retain shared structures.
   	 * @return {InterleavedBuffer} A clone of this instance.
-  	 */clone(data){if(data.arrayBuffers===undefined){data.arrayBuffers={};}if(this.array.buffer._uuid===undefined){this.array.buffer._uuid=generateUUID();}if(data.arrayBuffers[this.array.buffer._uuid]===undefined){data.arrayBuffers[this.array.buffer._uuid]=this.array.slice(0).buffer;}const array=new this.array.constructor(data.arrayBuffers[this.array.buffer._uuid]);const ib=new this.constructor(array,this.stride);ib.setUsage(this.usage);return ib;}/**
+  	 */clone(data){if(data.arrayBuffers===undefined){data.arrayBuffers={};}if(this.array.buffer._uuid===undefined){this.array.buffer._uuid=generateUUID$1();}if(data.arrayBuffers[this.array.buffer._uuid]===undefined){data.arrayBuffers[this.array.buffer._uuid]=this.array.slice(0).buffer;}const array=new this.array.constructor(data.arrayBuffers[this.array.buffer._uuid]);const ib=new this.constructor(array,this.stride);ib.setUsage(this.usage);return ib;}/**
   	 * Sets the given callback function that is executed after the Renderer has transferred
   	 * the array data to the GPU. Can be used to perform clean-up operations after
   	 * the upload when data are not needed anymore on the CPU side.
@@ -8070,7 +8204,7 @@
   	 * @param {Object} [data] - An optional value holding meta information about the serialization.
   	 * @return {Object} A JSON object representing the serialized interleaved buffer.
   	 */toJSON(data){if(data.arrayBuffers===undefined){data.arrayBuffers={};}// generate UUID for array buffer if necessary
-  if(this.array.buffer._uuid===undefined){this.array.buffer._uuid=generateUUID();}if(data.arrayBuffers[this.array.buffer._uuid]===undefined){data.arrayBuffers[this.array.buffer._uuid]=Array.from(new Uint32Array(this.array.buffer));}//
+  if(this.array.buffer._uuid===undefined){this.array.buffer._uuid=generateUUID$1();}if(data.arrayBuffers[this.array.buffer._uuid]===undefined){data.arrayBuffers[this.array.buffer._uuid]=Array.from(new Uint32Array(this.array.buffer));}//
   return {uuid:this.uuid,buffer:this.array.buffer._uuid,type:this.array.constructor.name,stride:this.stride};}}const _vector$7=/*@__PURE__*/new Vector3();/**
    * An alternative version of a buffer attribute with interleaved data. Interleaved
    * attributes share a common interleaved data storage ({@link InterleavedBuffer}) and refer with
@@ -9884,7 +10018,7 @@
   		 *
   		 * @type {string}
   		 * @readonly
-  		 */this.uuid=generateUUID();this.type='Shape';/**
+  		 */this.uuid=generateUUID$1();this.type='Shape';/**
   		 * Defines the holes in the shape. Hole definitions must use the
   		 * opposite winding order (CW/CCW) than the outer shape.
   		 *
@@ -17111,7 +17245,7 @@ void main() {
       return [...tmp, result.value];
     }, []);
   }
-  function isObject(value) {
+  function isObject$2(value) {
     if (value === null) {
       return false;
     }
@@ -17151,7 +17285,7 @@ void main() {
       constant: value => createMicroParserBuilder(v => v === value ? value : undefined)(optional),
       raw: createMicroParserBuilder(v => v)(optional),
       object: keyToParserMap => createMicroParserBuilder(v => {
-        if (!isObject(v)) {
+        if (!isObject$2(v)) {
           return undefined;
         }
         return parseObject(v, keyToParserMap);
@@ -24724,7 +24858,7 @@ void main() {
 
   var fragmentShader = "#define GLSLIFY 1\nvarying vec2 vUv;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);gl_FragColor=filledFragColor;}"; // eslint-disable-line
 
-  var defaultOptions$1 = {
+  var defaultOptions$2 = {
     side: FrontSide,
     transparent: true,
     defines: {
@@ -24741,7 +24875,7 @@ void main() {
     function MSDFTextMaterial() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       _classCallCheck(this, MSDFTextMaterial);
-      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions$1)), options);
+      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions$2)), options);
       return _callSuper(this, MSDFTextMaterial, [options]);
     }
     _inherits(MSDFTextMaterial, _ShaderMaterial);
@@ -47018,7 +47152,7 @@ var<${access}> ${name} : ${structName};`;}}/**
   TSL.workingToColorSpace;
   TSL.xor;
 
-  var defaultOptions = {
+  var defaultOptions$1 = {
     transparent: true,
     opacity: 1,
     alphaTest: 0.01,
@@ -47034,7 +47168,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       var _this;
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       _classCallCheck(this, MSDFTextNodeMaterial);
-      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions)), options);
+      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions$1)), options);
       _this = _callSuper(this, MSDFTextNodeMaterial);
 
       /**
@@ -47124,7 +47258,612 @@ var<${access}> ${name} : ${structName};`;}}/**
     return _createClass(MSDFTextNodeMaterial);
   }(NodeMaterial);
 
-  var config$4 = {
+  /**
+   * @license
+   * Copyright 2019 Google LLC
+   * SPDX-License-Identifier: Apache-2.0
+   */
+  const proxyMarker = Symbol("Comlink.proxy");
+  const createEndpoint = Symbol("Comlink.endpoint");
+  const releaseProxy = Symbol("Comlink.releaseProxy");
+  const finalizer = Symbol("Comlink.finalizer");
+  const throwMarker = Symbol("Comlink.thrown");
+  const isObject = val => typeof val === "object" && val !== null || typeof val === "function";
+  /**
+   * Internal transfer handle to handle objects marked to proxy.
+   */
+  const proxyTransferHandler = {
+    canHandle: val => isObject(val) && val[proxyMarker],
+    serialize(obj) {
+      const {
+        port1,
+        port2
+      } = new MessageChannel();
+      expose(obj, port1);
+      return [port2, [port2]];
+    },
+    deserialize(port) {
+      port.start();
+      return wrap(port);
+    }
+  };
+  /**
+   * Internal transfer handler to handle thrown exceptions.
+   */
+  const throwTransferHandler = {
+    canHandle: value => isObject(value) && throwMarker in value,
+    serialize({
+      value
+    }) {
+      let serialized;
+      if (value instanceof Error) {
+        serialized = {
+          isError: true,
+          value: {
+            message: value.message,
+            name: value.name,
+            stack: value.stack
+          }
+        };
+      } else {
+        serialized = {
+          isError: false,
+          value
+        };
+      }
+      return [serialized, []];
+    },
+    deserialize(serialized) {
+      if (serialized.isError) {
+        throw Object.assign(new Error(serialized.value.message), serialized.value);
+      }
+      throw serialized.value;
+    }
+  };
+  /**
+   * Allows customizing the serialization of certain values.
+   */
+  const transferHandlers = new Map([["proxy", proxyTransferHandler], ["throw", throwTransferHandler]]);
+  function isAllowedOrigin(allowedOrigins, origin) {
+    for (const allowedOrigin of allowedOrigins) {
+      if (origin === allowedOrigin || allowedOrigin === "*") {
+        return true;
+      }
+      if (allowedOrigin instanceof RegExp && allowedOrigin.test(origin)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function expose(obj, ep = globalThis, allowedOrigins = ["*"]) {
+    ep.addEventListener("message", function callback(ev) {
+      if (!ev || !ev.data) {
+        return;
+      }
+      if (!isAllowedOrigin(allowedOrigins, ev.origin)) {
+        console.warn(`Invalid origin '${ev.origin}' for comlink proxy`);
+        return;
+      }
+      const {
+        id,
+        type,
+        path
+      } = Object.assign({
+        path: []
+      }, ev.data);
+      const argumentList = (ev.data.argumentList || []).map(fromWireValue);
+      let returnValue;
+      try {
+        const parent = path.slice(0, -1).reduce((obj, prop) => obj[prop], obj);
+        const rawValue = path.reduce((obj, prop) => obj[prop], obj);
+        switch (type) {
+          case "GET" /* MessageType.GET */:
+            {
+              returnValue = rawValue;
+            }
+            break;
+          case "SET" /* MessageType.SET */:
+            {
+              parent[path.slice(-1)[0]] = fromWireValue(ev.data.value);
+              returnValue = true;
+            }
+            break;
+          case "APPLY" /* MessageType.APPLY */:
+            {
+              returnValue = rawValue.apply(parent, argumentList);
+            }
+            break;
+          case "CONSTRUCT" /* MessageType.CONSTRUCT */:
+            {
+              const value = new rawValue(...argumentList);
+              returnValue = proxy(value);
+            }
+            break;
+          case "ENDPOINT" /* MessageType.ENDPOINT */:
+            {
+              const {
+                port1,
+                port2
+              } = new MessageChannel();
+              expose(obj, port2);
+              returnValue = transfer(port1, [port1]);
+            }
+            break;
+          case "RELEASE" /* MessageType.RELEASE */:
+            {
+              returnValue = undefined;
+            }
+            break;
+          default:
+            return;
+        }
+      } catch (value) {
+        returnValue = {
+          value,
+          [throwMarker]: 0
+        };
+      }
+      Promise.resolve(returnValue).catch(value => {
+        return {
+          value,
+          [throwMarker]: 0
+        };
+      }).then(returnValue => {
+        const [wireValue, transferables] = toWireValue(returnValue);
+        ep.postMessage(Object.assign(Object.assign({}, wireValue), {
+          id
+        }), transferables);
+        if (type === "RELEASE" /* MessageType.RELEASE */) {
+          // detach and deactive after sending release response above.
+          ep.removeEventListener("message", callback);
+          closeEndPoint(ep);
+          if (finalizer in obj && typeof obj[finalizer] === "function") {
+            obj[finalizer]();
+          }
+        }
+      }).catch(error => {
+        // Send Serialization Error To Caller
+        const [wireValue, transferables] = toWireValue({
+          value: new TypeError("Unserializable return value"),
+          [throwMarker]: 0
+        });
+        ep.postMessage(Object.assign(Object.assign({}, wireValue), {
+          id
+        }), transferables);
+      });
+    });
+    if (ep.start) {
+      ep.start();
+    }
+  }
+  function isMessagePort(endpoint) {
+    return endpoint.constructor.name === "MessagePort";
+  }
+  function closeEndPoint(endpoint) {
+    if (isMessagePort(endpoint)) endpoint.close();
+  }
+  function wrap(ep, target) {
+    const pendingListeners = new Map();
+    ep.addEventListener("message", function handleMessage(ev) {
+      const {
+        data
+      } = ev;
+      if (!data || !data.id) {
+        return;
+      }
+      const resolver = pendingListeners.get(data.id);
+      if (!resolver) {
+        return;
+      }
+      try {
+        resolver(data);
+      } finally {
+        pendingListeners.delete(data.id);
+      }
+    });
+    return createProxy(ep, pendingListeners, [], target);
+  }
+  function throwIfProxyReleased(isReleased) {
+    if (isReleased) {
+      throw new Error("Proxy has been released and is not useable");
+    }
+  }
+  function releaseEndpoint(ep) {
+    return requestResponseMessage(ep, new Map(), {
+      type: "RELEASE" /* MessageType.RELEASE */
+    }).then(() => {
+      closeEndPoint(ep);
+    });
+  }
+  const proxyCounter = new WeakMap();
+  const proxyFinalizers = "FinalizationRegistry" in globalThis && new FinalizationRegistry(ep => {
+    const newCount = (proxyCounter.get(ep) || 0) - 1;
+    proxyCounter.set(ep, newCount);
+    if (newCount === 0) {
+      releaseEndpoint(ep);
+    }
+  });
+  function registerProxy(proxy, ep) {
+    const newCount = (proxyCounter.get(ep) || 0) + 1;
+    proxyCounter.set(ep, newCount);
+    if (proxyFinalizers) {
+      proxyFinalizers.register(proxy, ep, proxy);
+    }
+  }
+  function unregisterProxy(proxy) {
+    if (proxyFinalizers) {
+      proxyFinalizers.unregister(proxy);
+    }
+  }
+  function createProxy(ep, pendingListeners, path = [], target = function () {}) {
+    let isProxyReleased = false;
+    const proxy = new Proxy(target, {
+      get(_target, prop) {
+        throwIfProxyReleased(isProxyReleased);
+        if (prop === releaseProxy) {
+          return () => {
+            unregisterProxy(proxy);
+            releaseEndpoint(ep);
+            pendingListeners.clear();
+            isProxyReleased = true;
+          };
+        }
+        if (prop === "then") {
+          if (path.length === 0) {
+            return {
+              then: () => proxy
+            };
+          }
+          const r = requestResponseMessage(ep, pendingListeners, {
+            type: "GET" /* MessageType.GET */,
+            path: path.map(p => p.toString())
+          }).then(fromWireValue);
+          return r.then.bind(r);
+        }
+        return createProxy(ep, pendingListeners, [...path, prop]);
+      },
+      set(_target, prop, rawValue) {
+        throwIfProxyReleased(isProxyReleased);
+        // FIXME: ES6 Proxy Handler `set` methods are supposed to return a
+        // boolean. To show good will, we return true asynchronously ¯\_(ツ)_/¯
+        const [value, transferables] = toWireValue(rawValue);
+        return requestResponseMessage(ep, pendingListeners, {
+          type: "SET" /* MessageType.SET */,
+          path: [...path, prop].map(p => p.toString()),
+          value
+        }, transferables).then(fromWireValue);
+      },
+      apply(_target, _thisArg, rawArgumentList) {
+        throwIfProxyReleased(isProxyReleased);
+        const last = path[path.length - 1];
+        if (last === createEndpoint) {
+          return requestResponseMessage(ep, pendingListeners, {
+            type: "ENDPOINT" /* MessageType.ENDPOINT */
+          }).then(fromWireValue);
+        }
+        // We just pretend that `bind()` didn’t happen.
+        if (last === "bind") {
+          return createProxy(ep, pendingListeners, path.slice(0, -1));
+        }
+        const [argumentList, transferables] = processArguments(rawArgumentList);
+        return requestResponseMessage(ep, pendingListeners, {
+          type: "APPLY" /* MessageType.APPLY */,
+          path: path.map(p => p.toString()),
+          argumentList
+        }, transferables).then(fromWireValue);
+      },
+      construct(_target, rawArgumentList) {
+        throwIfProxyReleased(isProxyReleased);
+        const [argumentList, transferables] = processArguments(rawArgumentList);
+        return requestResponseMessage(ep, pendingListeners, {
+          type: "CONSTRUCT" /* MessageType.CONSTRUCT */,
+          path: path.map(p => p.toString()),
+          argumentList
+        }, transferables).then(fromWireValue);
+      }
+    });
+    registerProxy(proxy, ep);
+    return proxy;
+  }
+  function myFlat(arr) {
+    return Array.prototype.concat.apply([], arr);
+  }
+  function processArguments(argumentList) {
+    const processed = argumentList.map(toWireValue);
+    return [processed.map(v => v[0]), myFlat(processed.map(v => v[1]))];
+  }
+  const transferCache = new WeakMap();
+  function transfer(obj, transfers) {
+    transferCache.set(obj, transfers);
+    return obj;
+  }
+  function proxy(obj) {
+    return Object.assign(obj, {
+      [proxyMarker]: true
+    });
+  }
+  function toWireValue(value) {
+    for (const [name, handler] of transferHandlers) {
+      if (handler.canHandle(value)) {
+        const [serializedValue, transferables] = handler.serialize(value);
+        return [{
+          type: "HANDLER" /* WireValueType.HANDLER */,
+          name,
+          value: serializedValue
+        }, transferables];
+      }
+    }
+    return [{
+      type: "RAW" /* WireValueType.RAW */,
+      value
+    }, transferCache.get(value) || []];
+  }
+  function fromWireValue(value) {
+    switch (value.type) {
+      case "HANDLER" /* WireValueType.HANDLER */:
+        return transferHandlers.get(value.name).deserialize(value.value);
+      case "RAW" /* WireValueType.RAW */:
+        return value.value;
+    }
+  }
+  function requestResponseMessage(ep, pendingListeners, msg, transfers) {
+    return new Promise(resolve => {
+      const id = generateUUID();
+      pendingListeners.set(id, resolve);
+      if (ep.start) {
+        ep.start();
+      }
+      ep.postMessage(Object.assign({
+        id
+      }, msg), transfers);
+    });
+  }
+  function generateUUID() {
+    return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
+  }
+
+  // src/worker-client.ts
+  var MSDFGeneratorWorkerClient = class {
+    worker;
+    api;
+    initPromise;
+    constructor(workerUrl, wasmBinaryUrl) {
+      this.worker = new Worker(workerUrl, {
+        type: "module"
+      });
+      this.api = wrap(this.worker);
+      this.initPromise = this.api.initialize(wasmBinaryUrl);
+    }
+    initialize = () => this.initPromise;
+    loadFont = async fontData => {
+      await this.initPromise;
+      return this.api.loadFont(fontData);
+    };
+    generateAtlas = options => this.api.generateAtlas(options);
+    exportJSON = options => this.api.exportJSON(options);
+    dispose = () => this.api.dispose();
+    generateMSDFAtlas = options => this.api.generateMSDFAtlas(options);
+    generateMSDFFont = options => this.api.generateMSDFFont(options);
+    terminate = () => this.worker.terminate();
+  };
+
+  // src/MSDFGenerator.ts
+  var MSDF = class {
+    static Encoder = new TextEncoder();
+    client = null;
+    workerUrl;
+    wasmUrl;
+    initialized = false;
+    constructor(config = {}) {
+      this.workerUrl = config.workerUrl || new URL("./worker.js", (typeof document === 'undefined' && typeof location === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : typeof document === 'undefined' ? location.href : (_documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === 'SCRIPT' && _documentCurrentScript.src || new URL('bundle-demo.js', document.baseURI).href))).href;
+      this.wasmUrl = config.wasmUrl;
+    }
+    async initialize() {
+      if (this.initialized) return;
+      this.client = new MSDFGeneratorWorkerClient(this.workerUrl, this.wasmUrl);
+      await this.client.initialize();
+      this.initialized = true;
+    }
+    async generate(options) {
+      if (!this.client || !this.initialized) {
+        throw new Error("MSDF not initialized. Call initialize() first.");
+      }
+      if (options.fonts) return this.generateMultiple(options);
+      return this.generateSingle(options);
+    }
+    async generateSingle(options) {
+      const {
+        onProgress,
+        ...workerOptions
+      } = options;
+      await this.client.loadFont(workerOptions.font);
+      const atlas = await this.client.generateAtlas(workerOptions);
+      const json = await this.client.exportJSON({
+        atlas,
+        fontSize: options.fontSize || 48
+      });
+      const blob = await this.atlasToBlob(atlas);
+      const base64 = await this.blobToBase64(blob);
+      const jsonWithInlinedTexture = {
+        ...json,
+        pages: [`data:image/png;base64,${base64}`]
+      };
+      onProgress?.(100, 1, 1);
+      return this.toFontFamily(jsonWithInlinedTexture, atlas.info.name || "font", atlas.info.weight || 400);
+    }
+    // TODO - We should worker-pool this, wasm bit is tricky tho
+    async generateMultiple(options) {
+      const {
+        fonts,
+        onProgress,
+        ...globalOptions
+      } = options;
+      if (!fonts || fonts.length === 0) throw new Error("No fonts provided");
+      const result = {};
+      let completed = 0;
+      const total = fonts.length;
+      for (const fontConfig of fonts) {
+        const {
+          font,
+          ...fontOptions
+        } = fontConfig;
+        const mergedOptions = {
+          ...globalOptions,
+          ...fontOptions,
+          font,
+          charset: fontOptions.charset ?? globalOptions.charset ?? ""
+        };
+        if (!mergedOptions.charset) throw new Error("charset is required globally or per-font");
+        const fontFamily = await this.generateSingle(mergedOptions);
+        for (const [fontName, weights] of Object.entries(fontFamily)) {
+          for (const [weight, fontData] of Object.entries(weights)) {
+            const weightNum = Number(weight);
+            if (result[fontName]?.[weightNum]) {
+              console.warn(`Duplicate font: ${fontName} (${weightNum}). Overwriting.`);
+            }
+            if (!result[fontName]) result[fontName] = {};
+            result[fontName][weightNum] = fontData;
+          }
+        }
+        completed++;
+        onProgress?.(Math.round(completed / total * 100), completed, total);
+      }
+      return result;
+    }
+    async generateAtlas(options) {
+      if (!this.client || !this.initialized) {
+        throw new Error("MSDF not initialized. Call initialize() first.");
+      }
+      const {
+        onProgress,
+        ...workerOptions
+      } = options;
+      await this.client.loadFont(workerOptions.font);
+      return await this.client.generateAtlas(workerOptions);
+    }
+    async dispose() {
+      if (this.client) {
+        await this.client.dispose();
+        this.client.terminate();
+        this.client = null;
+        this.initialized = false;
+      }
+    }
+    async toFontFamily(json, fontName, fontWeight) {
+      return {
+        [fontName]: {
+          [fontWeight]: json
+        }
+      };
+    }
+    atlasToBlob(atlas) {
+      const canvas = document.createElement("canvas");
+      canvas.width = atlas.textureSize[0];
+      canvas.height = atlas.textureSize[1];
+      canvas.getContext("2d").putImageData(atlas.texture, 0, 0);
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Failed to create blob")), "image/png");
+      });
+    }
+    blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+  };
+
+  var defaultOptions = {
+    charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ',
+    fontSize: 48,
+    textureSize: [512, 512],
+    fieldRange: 4,
+    fixOverlaps: true,
+    onProgress: function onProgress() {}
+  };
+  var generateMSDF = /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(fontPath) {
+      var options,
+        parsedOptions,
+        msdf,
+        req,
+        ab,
+        fontBuffer,
+        result,
+        fontName,
+        fontWeight,
+        fontData,
+        atlasBase64,
+        atlas,
+        _args = arguments;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.n) {
+          case 0:
+            options = _args.length > 1 && _args[1] !== undefined ? _args[1] : {};
+            parsedOptions = _objectSpread2(_objectSpread2({}, defaultOptions), options);
+            msdf = new MSDF({
+              workerUrl: parsedOptions.workerUrl,
+              wasmUrl: parsedOptions.wasmUrl
+            });
+            _context.n = 1;
+            return msdf.initialize();
+          case 1:
+            _context.n = 2;
+            return fetch(fontPath);
+          case 2:
+            req = _context.v;
+            _context.n = 3;
+            return req.arrayBuffer();
+          case 3:
+            ab = _context.v;
+            fontBuffer = new Uint8Array(ab); // Generate MSDF atlas
+            _context.n = 4;
+            return msdf.generate({
+              font: fontBuffer,
+              charset: parsedOptions.charset,
+              fontSize: parsedOptions.fontSize,
+              textureSize: parsedOptions.textureSize,
+              fieldRange: parsedOptions.fieldRange,
+              fixOverlaps: parsedOptions.fixOverlaps,
+              onProgress: parsedOptions.onProgress
+            });
+          case 4:
+            result = _context.v;
+            _context.n = 5;
+            return msdf.dispose();
+          case 5:
+            fontName = Object.keys(result)[0];
+            fontWeight = Object.keys(result[fontName])[0];
+            fontData = result[fontName][fontWeight];
+            atlasBase64 = fontData.pages[0];
+            _context.n = 6;
+            return new Promise(function (resolve, reject) {
+              var image = new Image();
+              image.onload = function () {
+                var texture = new Texture(image);
+                texture.needsUpdate = true;
+                resolve(texture);
+              };
+              image.onerror = reject;
+              image.src = atlasBase64;
+            });
+          case 6:
+            atlas = _context.v;
+            return _context.a(2, {
+              font: new Font(fontData),
+              atlas: atlas
+            });
+        }
+      }, _callee);
+    }));
+    return function generateMSDF(_x) {
+      return _ref.apply(this, arguments);
+    };
+  }();
+
+  var config$5 = {
     name: 'Basic',
     text: 'Basic example',
     settings: {
@@ -47141,7 +47880,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       this.camera = null;
       this.controls = null;
       this.debugger = new Pane({
-        title: "".concat(config$4.name, " Example")
+        title: "".concat(config$5.name, " Example")
       });
     }
     return _createClass(Basic, [{
@@ -47178,7 +47917,7 @@ var<${access}> ${name} : ${structName};`;}}/**
             atlas = _ref2[0],
             font = _ref2[1];
           var geometry = new MSDFTextGeometry({
-            text: config$4.text,
+            text: config$5.text,
             font: font.data,
             width: 1000,
             align: 'center'
@@ -47203,10 +47942,10 @@ var<${access}> ${name} : ${structName};`;}}/**
             min: 0,
             max: 1
           });
-          debugFolderCommon.addBinding(config$4.settings, 'color', {
+          debugFolderCommon.addBinding(config$5.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
-            material.uniforms.uColor.value.set(config$4.settings.color);
+            material.uniforms.uColor.value.set(config$5.settings.color);
           });
           var debugFolderRendering = _this.debugger.addFolder({
             title: 'Rendering'
@@ -47272,7 +48011,7 @@ var<${access}> ${name} : ${structName};`;}}/**
     }]);
   }();
 
-  var config$3 = {
+  var config$4 = {
     name: 'Editor',
     text: 'Your text here',
     properties: {
@@ -47296,7 +48035,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       this.camera = null;
       this.controls = null;
       this.debugger = new Pane({
-        title: "".concat(config$3.name, " Example")
+        title: "".concat(config$4.name, " Example")
       });
     }
     return _createClass(Editor, [{
@@ -47342,28 +48081,28 @@ var<${access}> ${name} : ${structName};`;}}/**
       key: "setupText",
       value: function setupText() {
         this.geometry = new MSDFTextGeometry(_objectSpread2({
-          text: config$3.text,
+          text: config$4.text,
           font: this.font.data
-        }, config$3.properties));
+        }, config$4.properties));
         this.material = new MSDFTextMaterial();
         this.material.uniforms.uMap.value = this.atlas;
         this.material.side = DoubleSide;
         this.mesh = new Mesh(this.geometry, this.material);
         this.mesh.rotation.x = Math.PI;
-        this.mesh.position.x = -this.geometry.layout.width / 2 * config$3.settings.scale;
-        this.mesh.scale.set(config$3.settings.scale, config$3.settings.scale, config$3.settings.scale);
+        this.mesh.position.x = -this.geometry.layout.width / 2 * config$4.settings.scale;
+        this.mesh.scale.set(config$4.settings.scale, config$4.settings.scale, config$4.settings.scale);
         this.scene.add(this.mesh);
       }
     }, {
       key: "setupDebugger",
       value: function setupDebugger() {
         var _this2 = this;
-        this.debugger.addBinding(config$3, 'text', {
+        this.debugger.addBinding(config$4, 'text', {
           title: 'Text'
         }).on('change', function () {
           _this2.updateText();
         });
-        this.debugger.addBinding(config$3.settings, 'scale', {
+        this.debugger.addBinding(config$4.settings, 'scale', {
           title: 'Scale'
         }).on('change', function () {
           _this2.updateText();
@@ -47373,10 +48112,10 @@ var<${access}> ${name} : ${structName};`;}}/**
         var debugFolderProperties = this.debugger.addFolder({
           title: 'Properties'
         });
-        debugFolderProperties.addBinding(config$3.properties, 'width').on('change', function () {
+        debugFolderProperties.addBinding(config$4.properties, 'width').on('change', function () {
           _this2.updateText();
         });
-        debugFolderProperties.addBinding(config$3.properties, 'align', {
+        debugFolderProperties.addBinding(config$4.properties, 'align', {
           options: {
             left: 'left',
             center: 'center',
@@ -47385,12 +48124,12 @@ var<${access}> ${name} : ${structName};`;}}/**
         }).on('change', function () {
           _this2.updateText();
         });
-        debugFolderProperties.addBinding(config$3.properties, 'letterSpacing', {
+        debugFolderProperties.addBinding(config$4.properties, 'letterSpacing', {
           label: 'letter spacing'
         }).on('change', function () {
           _this2.updateText();
         });
-        debugFolderProperties.addBinding(config$3.properties, 'lineHeight', {
+        debugFolderProperties.addBinding(config$4.properties, 'lineHeight', {
           label: 'line height'
         }).on('change', function () {
           _this2.updateText();
@@ -47408,10 +48147,10 @@ var<${access}> ${name} : ${structName};`;}}/**
           min: 0,
           max: 1
         });
-        debugFolderCommon.addBinding(config$3.settings, 'color', {
+        debugFolderCommon.addBinding(config$4.settings, 'color', {
           label: 'Color'
         }).on('change', function () {
-          _this2.material.uniforms.uColor.value.set(config$3.settings.color);
+          _this2.material.uniforms.uColor.value.set(config$4.settings.color);
         });
         var debugFolderRendering = debugFolderMaterial.addFolder({
           title: 'Rendering'
@@ -47436,10 +48175,10 @@ var<${access}> ${name} : ${structName};`;}}/**
       key: "updateText",
       value: function updateText() {
         this.geometry.update(_objectSpread2({
-          text: config$3.text
-        }, config$3.properties));
-        this.mesh.position.x = -this.geometry.layout.width / 2 * config$3.settings.scale;
-        this.mesh.scale.set(config$3.settings.scale, config$3.settings.scale, config$3.settings.scale);
+          text: config$4.text
+        }, config$4.properties));
+        this.mesh.position.x = -this.geometry.layout.width / 2 * config$4.settings.scale;
+        this.mesh.scale.set(config$4.settings.scale, config$4.settings.scale, config$4.settings.scale);
       }
     }, {
       key: "loadFontAtlas",
@@ -47489,7 +48228,7 @@ var<${access}> ${name} : ${structName};`;}}/**
 
   var fragment$1 = "#define GLSLIFY 1\nvarying vec2 vUv;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);vec4 strokedFragColor=vec4(uStrokeColor,uOpacity*border);gl_FragColor=mix(filledFragColor,strokedFragColor,border);}"; // eslint-disable-line
 
-  var config$2 = {
+  var config$3 = {
     name: 'Stroke',
     text: 'Stroke example',
     settings: {
@@ -47507,7 +48246,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       this.camera = null;
       this.controls = null;
       this.debugger = new Pane({
-        title: "".concat(config$2.name, " Example")
+        title: "".concat(config$3.name, " Example")
       });
     }
     return _createClass(Stroke, [{
@@ -47544,7 +48283,7 @@ var<${access}> ${name} : ${structName};`;}}/**
             atlas = _ref2[0],
             font = _ref2[1];
           var geometry = new MSDFTextGeometry({
-            text: config$2.text,
+            text: config$3.text,
             font: font.data,
             width: 1000,
             align: 'center'
@@ -47564,8 +48303,8 @@ var<${access}> ${name} : ${structName};`;}}/**
           });
           material.uniforms.uMap.value = atlas;
           material.side = DoubleSide;
-          material.uniforms.uColor.value = new Color(config$2.settings.color);
-          material.uniforms.uStrokeColor.value = new Color(config$2.settings.strokeColor);
+          material.uniforms.uColor.value = new Color(config$3.settings.color);
+          material.uniforms.uStrokeColor.value = new Color(config$3.settings.strokeColor);
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
           var scale = 3;
@@ -47582,18 +48321,18 @@ var<${access}> ${name} : ${structName};`;}}/**
             min: 0,
             max: 1
           });
-          debugFolderCommon.addBinding(config$2.settings, 'color', {
+          debugFolderCommon.addBinding(config$3.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
-            material.uniforms.uColor.value.set(config$2.settings.color);
+            material.uniforms.uColor.value.set(config$3.settings.color);
           });
           var debugFolderStrokes = _this.debugger.addFolder({
             title: 'Strokes'
           });
-          debugFolderStrokes.addBinding(config$2.settings, 'strokeColor', {
+          debugFolderStrokes.addBinding(config$3.settings, 'strokeColor', {
             label: 'Color'
           }).on('change', function () {
-            material.uniforms.uStrokeColor.value.set(config$2.settings.strokeColor);
+            material.uniforms.uStrokeColor.value.set(config$3.settings.strokeColor);
           });
           debugFolderStrokes.addBinding(material.uniforms.uStrokeInsetWidth, 'value', {
             label: 'Inset width',
@@ -47650,7 +48389,7 @@ var<${access}> ${name} : ${structName};`;}}/**
 
   var fragment = "#define GLSLIFY 1\nvarying vec2 vUv;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);gl_FragColor=filledFragColor*((vLineLetterIndex+1.0)/vLineLettersTotal);}"; // eslint-disable-line
 
-  var config$1 = {
+  var config$2 = {
     name: 'Reveal',
     text: 'Reveal Text \n Reveal text',
     settings: {
@@ -47667,7 +48406,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       this.camera = null;
       this.controls = null;
       this.debugger = new Pane({
-        title: "".concat(config$1.name, " Example")
+        title: "".concat(config$2.name, " Example")
       });
     }
     return _createClass(Reveal, [{
@@ -47704,7 +48443,7 @@ var<${access}> ${name} : ${structName};`;}}/**
             atlas = _ref2[0],
             font = _ref2[1];
           var geometry = new MSDFTextGeometry({
-            text: config$1.text,
+            text: config$2.text,
             font: font.data,
             align: 'center'
           });
@@ -47734,8 +48473,8 @@ var<${access}> ${name} : ${structName};`;}}/**
           });
           material.uniforms.uMap.value = atlas;
           material.side = DoubleSide;
-          material.uniforms.uColor.value = new Color(config$1.settings.color);
-          material.uniforms.uStrokeColor.value = new Color(config$1.settings.strokeColor);
+          material.uniforms.uColor.value = new Color(config$2.settings.color);
+          material.uniforms.uStrokeColor.value = new Color(config$2.settings.strokeColor);
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
           var scale = 3;
@@ -47752,10 +48491,10 @@ var<${access}> ${name} : ${structName};`;}}/**
             min: 0,
             max: 1
           });
-          debugFolderCommon.addBinding(config$1.settings, 'color', {
+          debugFolderCommon.addBinding(config$2.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
-            material.uniforms.uColor.value.set(config$1.settings.color);
+            material.uniforms.uColor.value.set(config$2.settings.color);
           });
         });
       }
@@ -47803,7 +48542,7 @@ var<${access}> ${name} : ${structName};`;}}/**
     }]);
   }();
 
-  var config = {
+  var config$1 = {
     name: 'WebGPU',
     text: 'WebGPU',
     settings: {
@@ -47820,7 +48559,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       this.camera = null;
       this.controls = null;
       this.debugger = new Pane({
-        title: "".concat(config.name, " Example")
+        title: "".concat(config$1.name, " Example")
       });
     }
     return _createClass(WebGPU, [{
@@ -47858,7 +48597,7 @@ var<${access}> ${name} : ${structName};`;}}/**
             atlas = _ref2[0],
             font = _ref2[1];
           var geometry = new MSDFTextGeometry({
-            text: config.text,
+            text: config$1.text,
             font: font.data,
             width: 1000,
             align: 'center'
@@ -47883,10 +48622,10 @@ var<${access}> ${name} : ${structName};`;}}/**
             min: 0,
             max: 1
           });
-          debugFolderCommon.addBinding(config.settings, 'color', {
+          debugFolderCommon.addBinding(config$1.settings, 'color', {
             label: 'Color'
           }).on('change', function () {
-            material.color.value.set(config.settings.color);
+            material.color.value.set(config$1.settings.color);
           });
           var debugFolderRendering = _this.debugger.addFolder({
             title: 'Rendering'
@@ -47958,12 +48697,284 @@ var<${access}> ${name} : ${structName};`;}}/**
     }]);
   }();
 
+  var config = {
+    name: 'MSDF Generator',
+    text: 'Your text here',
+    fontUrl: './fonts/space-grotesk/regular.ttf',
+    fontOptions: ['./fonts/space-grotesk/regular.ttf', './fonts/exo/regular.ttf', './fonts/gloria-hallelujah/regular.ttf', './fonts/titan-one/regular.ttf', './fonts/zilla-slab/regular.ttf', './fonts/bitcount-grid-double/regular.ttf', './fonts/roboto/regular.ttf'],
+    fontState: 'idle',
+    properties: {
+      align: 'center',
+      width: 1000,
+      letterSpacing: 0,
+      lineHeight: 100
+    },
+    settings: {
+      color: '#ffffff',
+      scale: 2
+    }
+  };
+
+  var MSDFGenerator = /*#__PURE__*/function () {
+    function MSDFGenerator() {
+      _classCallCheck(this, MSDFGenerator);
+      this.canvas = document.querySelector('.js-canvas');
+      this.renderer = null;
+      this.scene = null;
+      this.camera = null;
+      this.controls = null;
+      this.debugger = new Pane({
+        title: "".concat(config.name, " Example")
+      });
+    }
+    return _createClass(MSDFGenerator, [{
+      key: "start",
+      value: function start() {
+        var _this = this;
+        config.fontState = 'Generating: 0%';
+        generateMSDF(config.fontUrl, {
+          workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js',
+          wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm',
+          onProgress: function onProgress(progress) {
+            config.fontState = "Generating: ".concat(progress, "%");
+          }
+        }).then(function (_ref) {
+          var font = _ref.font,
+            atlas = _ref.atlas;
+          _this.font = font;
+          _this.atlas = atlas;
+          _this.setupEventListeners();
+          _this.setup();
+          _this.setupText();
+          _this.setupDebugger();
+          _this.update();
+          config.fontState = "Generation completed.";
+        }).catch(function (error) {
+          config.fontState = error;
+        });
+      }
+    }, {
+      key: "loadResources",
+      value: function loadResources() {
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        return Promise.all(promises);
+      }
+    }, {
+      key: "setup",
+      value: function setup() {
+        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera.position.z = 1000;
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({
+          canvas: this.canvas,
+          antialias: true
+        });
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }, {
+      key: "setupText",
+      value: function setupText() {
+        this.geometry = new MSDFTextGeometry(_objectSpread2({
+          text: config.text,
+          font: this.font.data
+        }, config.properties));
+        this.material = new MSDFTextMaterial();
+        this.material.uniforms.uMap.value = this.atlas;
+        this.material.side = DoubleSide;
+        this.mesh = new Mesh(this.geometry, this.material);
+        this.mesh.rotation.x = Math.PI;
+        this.mesh.position.x = -this.geometry.layout.width / 2 * config.settings.scale;
+        this.mesh.scale.set(config.settings.scale, config.settings.scale, config.settings.scale);
+        this.scene.add(this.mesh);
+      }
+    }, {
+      key: "setupDebugger",
+      value: function setupDebugger() {
+        var _this2 = this;
+        this.debugger.addBinding(config, 'text', {
+          title: 'Text'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+        this.debugger.addBinding(config.settings, 'scale', {
+          title: 'Scale'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+
+        // Font
+        var debugFolderFont = this.debugger.addFolder({
+          title: 'Font'
+        });
+        var fontOptions = config.fontOptions.map(function (item) {
+          return {
+            text: "".concat(item.split('/')[2], "-").concat(item.split('/')[3]),
+            value: item
+          };
+        });
+        var userFont = {
+          url: 'Paste your ttf url'
+        };
+        debugFolderFont.addBinding(config, 'fontUrl', {
+          options: fontOptions,
+          label: 'Choose font'
+        }).on('change', function () {
+          _this2.updateFont();
+        });
+        debugFolderFont.addBinding(userFont, 'url', {
+          label: 'Your font'
+        }).on('change', function () {
+          config.fontUrl = userFont.url;
+          _this2.updateFont();
+        });
+        debugFolderFont.addBinding(config, 'fontState', {
+          label: 'Status',
+          readonly: true,
+          rows: 3
+        });
+
+        // Properties
+        var debugFolderProperties = this.debugger.addFolder({
+          title: 'Properties'
+        });
+        debugFolderProperties.addBinding(config.properties, 'width').on('change', function () {
+          _this2.updateText();
+        });
+        debugFolderProperties.addBinding(config.properties, 'align', {
+          options: {
+            left: 'left',
+            center: 'center',
+            right: 'right'
+          }
+        }).on('change', function () {
+          _this2.updateText();
+        });
+        debugFolderProperties.addBinding(config.properties, 'letterSpacing', {
+          label: 'letter spacing'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+        debugFolderProperties.addBinding(config.properties, 'lineHeight', {
+          label: 'line height'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+
+        // Material
+        var debugFolderMaterial = this.debugger.addFolder({
+          title: 'Material'
+        });
+        var debugFolderCommon = debugFolderMaterial.addFolder({
+          title: 'Common'
+        });
+        debugFolderCommon.addBinding(this.material.uniforms.uOpacity, 'value', {
+          label: 'Opacity',
+          min: 0,
+          max: 1
+        });
+        debugFolderCommon.addBinding(config.settings, 'color', {
+          label: 'Color'
+        }).on('change', function () {
+          _this2.material.uniforms.uColor.value.set(config.settings.color);
+        });
+        var debugFolderRendering = debugFolderMaterial.addFolder({
+          title: 'Rendering'
+        });
+        debugFolderRendering.addBinding(this.material.defines, 'IS_SMALL', {
+          label: 'Is small'
+        }).on('change', function () {
+          _this2.material.needsUpdate = true;
+        });
+        debugFolderRendering.addBinding(this.material.uniforms.uAlphaTest, 'value', {
+          label: 'Alpha test',
+          min: 0,
+          max: 1
+        });
+        debugFolderRendering.addBinding(this.material.uniforms.uThreshold, 'value', {
+          label: 'Threshold (IS_SMALL)',
+          min: 0,
+          max: 1
+        });
+      }
+    }, {
+      key: "updateText",
+      value: function updateText() {
+        this.geometry.update(_objectSpread2({
+          text: config.text
+        }, config.properties));
+        this.mesh.position.x = -this.geometry.layout.width / 2 * config.settings.scale;
+        this.mesh.scale.set(config.settings.scale, config.settings.scale, config.settings.scale);
+      }
+    }, {
+      key: "updateFont",
+      value: function updateFont() {
+        var _this3 = this;
+        config.fontState = 'Generating: 0%';
+        generateMSDF(config.fontUrl, {
+          workerUrl: 'http://0.0.0.0:3003/msdfgen/worker.bundled.js',
+          wasmUrl: 'http://0.0.0.0:3003/msdfgen/msdfgen_wasm.wasm',
+          onProgress: function onProgress(progress) {
+            config.fontState = "Generating: ".concat(progress, "%");
+          }
+        }).then(function (_ref2) {
+          var font = _ref2.font,
+            atlas = _ref2.atlas;
+          _this3.font = font;
+          _this3.atlas = atlas;
+
+          // Update geometry
+          _this3.geometry.update({
+            font: _this3.font.data
+          });
+
+          // Update atlas from material
+          _this3.material.uniforms.uMap.value.dispose();
+          _this3.material.uniforms.uMap.value = _this3.atlas;
+
+          // Correct position based on layout
+          _this3.mesh.position.x = -_this3.geometry.layout.width / 2 * config.settings.scale;
+          config.fontState = "Generation completed.";
+        }).catch(function (error) {
+          config.fontState = error;
+        });
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        this.render();
+        requestAnimationFrame(this.update.bind(this));
+      }
+    }, {
+      key: "setupEventListeners",
+      value: function setupEventListeners() {
+        window.addEventListener('resize', this.resizeHandler.bind(this));
+      }
+    }, {
+      key: "resizeHandler",
+      value: function resizeHandler() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }]);
+  }();
+
   var scenes = {
     basic: Basic,
     stroke: Stroke,
     editor: Editor,
     reveal: Reveal,
-    webgpu: WebGPU
+    webgpu: WebGPU,
+    'msdf-generator': MSDFGenerator
   };
 
   var GITHUB_BASE_URL = 'https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes';

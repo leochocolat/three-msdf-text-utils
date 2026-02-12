@@ -1,0 +1,59 @@
+{
+  "name": "@zappar/msdf-generator",
+  "version": "1.2.4",
+  "type": "module",
+  "description": "Modern TypeScript wrapper for msdfgen WebAssembly - Generate MSDF font atlases in the browser",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "import": "./dist/worker.js"
+    },
+    "./worker.js": "./dist/worker.js",
+    "./msdfgen_wasm.wasm": "./dist/msdfgen_wasm.wasm"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "docs"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsup",
+    "type-check": "tsc --noEmit",
+    "dev": "vite app",
+    "app:build": "tsc -p app/tsconfig.json && vite build app",
+    "app:preview": "vite preview app",
+    "lint": "gts lint",
+    "clean": "gts clean",
+    "fix": "gts fix"
+  },
+  "keywords": [
+    "msdf",
+    "font",
+    "webassembly",
+    "wasm",
+    "texture-atlas",
+    "distance-field"
+  ],
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3",
+    "vite": "^7.1.11",
+    "gts": "^6.0.2",
+    "@types/node": "^22.7.5"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "comlink": "^4.4.2"
+  }
+}
