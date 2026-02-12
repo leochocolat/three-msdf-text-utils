@@ -138,8 +138,8 @@ export default class MSDFGenerator {
         config.fontState = 'Generating: 0%';
         
         generateMSDF(config.fontUrl, {
-            workerUrl: 'http://0.0.0.0:3003/msdfgen/worker.bundled.js',
-            wasmUrl: 'http://0.0.0.0:3003/msdfgen/msdfgen_wasm.wasm',
+            workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js',
+            wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm',
             onProgress: (progress) => { config.fontState = `Generating: ${progress}%`; }
         }).then(({ font, atlas }) => {
             this.font = font;
