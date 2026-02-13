@@ -42,6 +42,8 @@ Pre-generating assets gives you full control over quality and reduces runtime ov
 
 ### Option 2: Runtime Generation with `generateMSDF`
 
+Forked from [@zappar/msdf-generator](https://www.npmjs.com/package/@zappar/msdf-generator)
+
 Generate MSDF assets directly in the browser from any TTF font file. This approach is convenient for dynamic font loading or when you want to support user-uploaded fonts.
 
 **Setup:**
@@ -76,6 +78,8 @@ generateMSDF('./fonts/roboto.ttf', {
 ```
 
 See the [live demo](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator) and [source code](https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes/MSDFGenerator/index.js) for a complete example with font switching.
+
+More details about this can be found here [@zappar/msdf-generator](https://www.npmjs.com/package/@zappar/msdf-generator)
 
 ## Installation
 
@@ -409,6 +413,7 @@ materials.strokeColor = '#00ff00';
 ### generateMSDF
 
 Generates MSDF font assets at runtime from a TTF font file.
+Forked from [@zappar/msdf-generator](https://www.npmjs.com/package/@zappar/msdf-generator)
 
 ```js
 const { font, atlas } = await generateMSDF(fontPath, options);
