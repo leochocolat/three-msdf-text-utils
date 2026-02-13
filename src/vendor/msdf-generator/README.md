@@ -102,7 +102,7 @@ You can override the default paths:
 ```typescript
 import {MSDF} from '@zappar/msdf-generator';
 import workerUrl from '@zappar/msdf-generator/worker.js?worker&url';
-import wasmUrl from '@zappar/msdf-generator/msdfgen_wasm.wasm?url';
+import wasmUrl from '@zappar/msdf-generator/msdfgen.wasm?url';
 
 const msdf = new MSDF({
   workerUrl,

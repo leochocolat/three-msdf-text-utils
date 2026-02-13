@@ -16,7 +16,7 @@
       "import": "./dist/worker.js"
     },
     "./worker.js": "./dist/worker.js",
-    "./msdfgen_wasm.wasm": "./dist/msdfgen_wasm.wasm"
+    "./msdfgen.wasm": "./dist/msdfgen.wasm"
   },
   "sideEffects": false,
   "files": [

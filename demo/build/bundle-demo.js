@@ -48716,7 +48716,7 @@ var<${access}> ${name} : ${structName};`;}}/**
   };
 
   var WORKER_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js';
-  var WASM_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm';
+  var WASM_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen.wasm';
   var MSDFGenerator = /*#__PURE__*/function () {
     function MSDFGenerator() {
       _classCallCheck(this, MSDFGenerator);

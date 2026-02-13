@@ -956,7 +956,7 @@ var createMSDFGenModule = (() => {
       } catch (d) {
         w(`Module.instantiateWasm callback failed with error: ${d}`), p(d);
       }
-      ra ??= m.locateFile ? qa("msdfgen_wasm.wasm") ? "msdfgen_wasm.wasm" : m.locateFile ? m.locateFile("msdfgen_wasm.wasm", r) : r + "msdfgen_wasm.wasm" : new URL("msdfgen_wasm.wasm", import.meta.url).href;
+      ra ??= m.locateFile ? qa("msdfgen.wasm") ? "msdfgen.wasm" : m.locateFile ? m.locateFile("msdfgen.wasm", r) : r + "msdfgen.wasm" : new URL("msdfgen.wasm", import.meta.url).href;
       try {
         var c = await ua(b);
         a(c.instance);

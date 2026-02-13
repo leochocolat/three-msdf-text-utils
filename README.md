@@ -48,7 +48,7 @@ Generate MSDF assets directly in the browser from any TTF font file. This approa
 
 Download the required WebAssembly files and place them in your public folder:
 - [worker.bundled.js](https://github.com/leochocolat/three-msdf-text-utils/raw/main/demo/msdfgen/worker.bundled.js)
-- [msdfgen_wasm.wasm](https://github.com/leochocolat/three-msdf-text-utils/raw/main/demo/msdfgen/msdfgen_wasm.wasm)
+- [msdfgen.wasm](https://github.com/leochocolat/three-msdf-text-utils/raw/main/demo/msdfgen/msdfgen.wasm)
 
 **Usage:**
 
@@ -58,7 +58,7 @@ import * as THREE from "three";
 
 generateMSDF('./fonts/roboto.ttf', {
     workerUrl: '/msdfgen/worker.bundled.js',
-    wasmUrl: '/msdfgen/msdfgen_wasm.wasm',
+    wasmUrl: '/msdfgen/msdfgen.wasm',
 }).then(({ font, atlas }) => {
     const geometry = new MSDFTextGeometry({
         text: "Hello World",
@@ -426,7 +426,7 @@ const { font, atlas } = await generateMSDF(fontPath, options);
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `workerUrl` | `string` | **required** | Path to `worker.bundled.js` |
-| `wasmUrl` | `string` | **required** | Path to `msdfgen_wasm.wasm` |
+| `wasmUrl` | `string` | **required** | Path to `msdfgen.wasm` |
 | `charset` | `string` | `A-Za-z0-9` + space | Characters to include in the atlas |
 | `fontSize` | `number` | `48` | Font size in pixels |
 | `textureSize` | `[number, number]` | `[512, 512]` | Atlas texture dimensions |
@@ -448,7 +448,7 @@ A Promise that resolves to an object containing:
 ```js
 generateMSDF('./font.ttf', {
     workerUrl: '/msdfgen/worker.bundled.js',
-    wasmUrl: '/msdfgen/msdfgen_wasm.wasm',
+    wasmUrl: '/msdfgen/msdfgen.wasm',
     charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?',
     fontSize: 64,
     textureSize: [1024, 1024],

@@ -12,7 +12,7 @@ import { MSDFTextGeometry, MSDFTextMaterial, generateMSDF } from '../../../src/i
 import config from './config';
 
 const WORKER_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js';
-const WASM_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm';
+const WASM_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen.wasm';
 
 export default class MSDFGenerator {
     constructor() {
