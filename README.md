@@ -5,61 +5,77 @@
 
 [![Featured on Three.js Resources](https://img.shields.io/badge/Featured%20on-Three.js%20Resources-7871ff?labelColor=7871ff&style=flat&logoColor=black&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzMzIiBoZWlnaHQ9IjM3NSIgdmlld0JveD0iMCAwIDMzMyAzNzUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xNzAuNDY2IDI5Ni4xNDRMMzkuMTExMiAzNzAuNjU0QzIxLjU3NTUgMzgwLjYwMiAtMC4xNTI3MTIgMzY3LjgzNiAwLjAwMDgwODk0OSAzNDcuNjc2TDEuMTIzODYgMjAwLjA4NUwxNzAuNDY2IDI5Ni4xNDRaTTE4MC42NTcgMjkwLjM2MkwxODAuNiAyOTAuMzk1TDEuNTUzNTQgMTg4LjgzMkwxNzkuMDkxIDg0LjUyMTVMMTgwLjY1NyAyOTAuMzYyWk0zMTkuMjM0IDE2Ni41OTFDMzM2LjYxNyAxNzYuODA0IDMzNi40MjUgMjAyLjAwNCAzMTguODg5IDIxMS45NTFMMTkwLjYxNSAyODQuNzE0TDE4OS4xMzQgOTAuMTUwNEwzMTkuMjM0IDE2Ni41OTFaTTIuNDQ5MDUgMjYuMDI5M0MyLjYwMjYyIDUuODY5NTIgMjQuNTIxNCAtNi41NjUwNyA0MS45MDQxIDMuNjQ3NUwxNjkuNDUyIDc4LjU4N0wxLjI5NjcxIDE3Ny4zODVMMi40NDkwNSAyNi4wMjkzWiIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K)](https://threejsresources.com/tool/three-msdf-text)
 
-Utility classes for Text rendering in Three.js using Bitmap fonts and MSDF (multi-channel signed distance fields).
+Text rendering utilities for Three.js using MSDF (multi-channel signed distance fields) and bitmap fonts. Provides crisp text at any scale with support for WebGL and WebGPU.
 
 Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 
-**It includes :**
+## Features
 
--   Refacto to ES6
-
--   Remove some small old dependencies
--   Replace some deprecated three.js code
--   Add more geometry attributes : layout uv, letter center positions, letter index, line index, letter index by line, word index, word index by line...
--   Compatibility check with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
--   WebGPU MSDFTextNodeMaterial
--   In browser bitmap font and MSDF atlas generation from ttf font files
--   More to come... maybe...
+- Refacto to ES6
+- Remove deprecated dependencies
+- Rich geometry attributes for text animations (letter index, word index, line index, layout UVs...)
+- WebGPU support via `MSDFTextNodeMaterial`
+- Compatible with [Three.js FontLoader](https://github.com/mrdoob/three.js/blob/master/examples/jsm/loaders/FontLoader.js)
+- Runtime MSDF atlas generation from TTF fonts
 
 ## Demo
 
--   [Basic](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=basic)
--   [Stroke](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=stroke)
--   [Editor](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=editor)
--   [Reveal](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=reveal)
--   [WebGPU](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=webgpu)
--   [MSDF Generator on the browser](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator)
+- [Basic](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=basic)
+- [Stroke](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=stroke)
+- [Editor](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=editor)
+- [Reveal](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=reveal)
+- [WebGPU](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=webgpu)
+- [MSDF Generator](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator)
 
-## Bitmap Font and Font Atlas
+## Getting Font Assets
 
-MSDF Font rendering needs Bitmap font data and MSDF (or SDF) font atlas. For the best control on quality and file size it's always best to pre-generate those files, but this library now also includes a way to generate them on the fly at runtime on the browser
+MSDF text rendering requires two assets: bitmap font data (glyph metrics) and an MSDF atlas texture. You can either pre-generate these at build time or generate them at runtime in the browser.
 
-### Bitmap and Atlas pre-generation
+### Option 1: Pre-generated Assets (Recommended for Production)
 
-You can use [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml) or with the [online tool](https://msdf-bmfont.donmccurdy.com/).
+Pre-generating assets gives you full control over quality and reduces runtime overhead.
 
-You can also check my [msdf-font-factory](https://github.com/leochocolat/msdf-font-factory) it already includes some files that you can use and a script to generate your files easily.
+**Tools:**
+- [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml) - CLI tool
+- [Online generator](https://msdf-bmfont.donmccurdy.com/) - Web-based tool
+- [msdf-font-factory](https://github.com/leochocolat/msdf-font-factory) - Ready-to-use fonts and generation scripts
 
-### Bitmap and Atlas Generation within the browser
+### Option 2: Runtime Generation with `generateMSDF`
 
-From a fork from [@zappar/msdf-generator](https://www.npmjs.com/package/@zappar/msdf-generator) I added the `generateMSDF` method that lets you generate the bitmap font and atlas texture needed for MSDF Font rendering.
+Generate MSDF assets directly in the browser from any TTF font file. This approach is convenient for dynamic font loading or when you want to support user-uploaded fonts.
 
-You'll need to download the worker and wasm files and put them in your project public folder. Download them [here](https://github.com/leochocolat/three-msdf-text-utils/tree/main/demo)
+**Setup:**
+
+Download the required WebAssembly files and place them in your public folder:
+- [worker.bundled.js](https://github.com/leochocolat/three-msdf-text-utils/raw/main/demo/msdfgen/worker.bundled.js)
+- [msdfgen_wasm.wasm](https://github.com/leochocolat/three-msdf-text-utils/raw/main/demo/msdfgen/msdfgen_wasm.wasm)
+
+**Usage:**
 
 ```js
-import { generateMSDF } from "three-msdf-text-utils";
+import { MSDFTextGeometry, MSDFTextMaterial, generateMSDF } from "three-msdf-text-utils";
+import * as THREE from "three";
 
-generateMSDF(config.fontUrl, {
-    workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js', // Replace by your own path
-    wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm', // Replace by your own path
+generateMSDF('./fonts/roboto.ttf', {
+    workerUrl: '/msdfgen/worker.bundled.js',
+    wasmUrl: '/msdfgen/msdfgen_wasm.wasm',
 }).then(({ font, atlas }) => {
-    // Create your text
+    const geometry = new MSDFTextGeometry({
+        text: "Hello World",
+        font: font.data,
+    });
+
+    const material = new MSDFTextMaterial();
+    material.uniforms.uMap.value = atlas;
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
 }).catch((error) => {
-    // Handle error
+    console.error('Font generation failed:', error);
 });
 ```
 
-Check [This demo](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator) and [Source code](https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes/MSDFGenerator/index.js)
+See the [live demo](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator) and [source code](https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes/MSDFGenerator/index.js) for a complete example with font switching.
 
 ## Installation
 
@@ -118,44 +134,39 @@ const geometry = new MSDFTextGeometry(options);
 
 **Options can be an object, or a String – equivalent to { text: str }.**
 
-#### Options specific to ThreeJS:
+#### Three.js-specific Options
 
--   `flipY` (boolean): whether the texture will be Y-flipped (default true)
--   `multipage` (boolean): whether to construct this geometry with an extra buffer containing page IDs. This is necessary for multi-texture fonts (default false)
+- `flipY` (boolean): whether the texture will be Y-flipped (default: `true`)
+- `multipage` (boolean): whether to construct this geometry with an extra buffer containing page IDs. This is necessary for multi-texture fonts (default: `false`)
 
-#### Other options
+#### Layout Options
 
--   `font` (required) the BMFont definition which holds chars, kernings, etc
--   `text` (string) the text to layout. Newline characters (\n) will cause line breaks
--   `width` (number, optional) the desired width of the text box, causes word-wrapping and clipping in "pre" mode. Leave as undefined to remove word-wrapping (default behaviour)
--   `mode` (string) a mode for word-wrapper; can be 'pre' (maintain spacing), or 'nowrap' (collapse whitespace but only break on newline characters), otherwise assumes normal word-wrap behaviour (collapse whitespace, break at width or newlines)
--   `align` (string) can be "left", "center" or "right" (default: left)
--   `letterSpacing` (number) the letter spacing in pixels (default: 0)
--   `lineHeight` (number) the line height in pixels (default to font.common.lineHeight)
--   `tabSize` (number) the number of spaces to use in a single tab (default 4)
--   `start` (number) the starting index into the text to layout (default 0)
--   `end` (number) the ending index (exclusive) into the text to layout (default text.length)
+- `font` (required) - the BMFont definition which holds chars, kernings, etc
+- `text` (string) - the text to layout. Newline characters (`\n`) will cause line breaks
+- `width` (number) - the desired width of the text box, causes word-wrapping and clipping in "pre" mode. Leave as undefined to remove word-wrapping (default behaviour)
+- `mode` (string) - a mode for word-wrapper; can be `'pre'` (maintain spacing), or `'nowrap'` (collapse whitespace but only break on newline characters), otherwise assumes normal word-wrap behaviour (collapse whitespace, break at width or newlines)
+- `align` (string) - can be `'left'`, `'center'` or `'right'` (default: `'left'`)
+- `letterSpacing` (number) - the letter spacing in pixels (default: `0`)
+- `lineHeight` (number) - the line height in pixels (default: `font.common.lineHeight`)
+- `tabSize` (number) - the number of spaces to use in a single tab (default: `4`)
+- `start` (number) - the starting index into the text to layout (default: `0`)
+- `end` (number) - the ending index (exclusive) into the text to layout (default: `text.length`)
 
 #### Methods
 
--   `update(options)`
+**`update(options)`**
 
-Re-builds the geometry using the given options. Any options not specified here will default to those set in the constructor.
-This method will recompute the text layout and rebuild the WebGL buffers.
-Options can be an object, or a String – equivalent to { text: str }.
+Re-builds the geometry using the given options. Any options not specified here will default to those set in the constructor. This method will recompute the text layout and rebuild the WebGL buffers. Options can be an object, or a String (equivalent to `{ text: str }`).
 
 #### Properties
 
--   `layout`
+**`layout`**
 
-Text Layout instance, you can use it to access layout attributes such as :
-> width, height, descender, ascender, xHeight, baseline, capHeight, lineHeight, linesTotal, lettersTotal
+Text Layout instance with attributes: `width`, `height`, `descender`, `ascender`, `xHeight`, `baseline`, `capHeight`, `lineHeight`, `linesTotal`, `lettersTotal`
 
--   `visibleGlyphs`
+**`visibleGlyphs`**
 
-A filtered set from `geometry.layout.glyphs` intended to align with the vertex data being used by the underlying BufferAttributes.
-
-This is an array of `{ line, position, index, data }` objects, [see here](https://github.com/Jam3/layout-bmfont-text#layoutglyphs). For example, this could be used to add a new BufferAttribute for `line` offset.
+A filtered set from `geometry.layout.glyphs` intended to align with the vertex data being used by the underlying BufferAttributes. This is an array of `{ line, position, index, data }` objects ([see here](https://github.com/Jam3/layout-bmfont-text#layoutglyphs)).
 
 #### Attributes
 
@@ -178,15 +189,14 @@ Besides the basic geometry attributes. There are some text specific attributes, 
 
 ### MSDFTextMaterial
 
-It extends from [Three.js ShaderMaterial](https://threejs.org/docs/#api/en/materials/ShaderMaterial)
-
-You can use it just by setting the atlas texture from your font :
+Extends [Three.js ShaderMaterial](https://threejs.org/docs/#api/en/materials/ShaderMaterial) with MSDF-specific rendering.
 
 ```js
-const material = new MSDFTextMaterial(options);
+const material = new MSDFTextMaterial();
 material.uniforms.uMap.value = atlas;
 ```
-#### Initial Properties
+
+#### Default Properties
 
 ```js
 const defaultOptions = {
@@ -396,28 +406,89 @@ materials.strokeColor = '#00ff00';
 - `isSmooth`: Switch render mode from sharp to smooth, useful for tiny fonts –– use only 0 or 1
 - `threshold`: smooth threshold (only used for isSmooth === 1)
 
+### generateMSDF
+
+Generates MSDF font assets at runtime from a TTF font file.
+
+```js
+const { font, atlas } = await generateMSDF(fontPath, options);
+```
+
+#### Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `fontPath` | `string` | Yes | URL or path to a TTF font file |
+| `options` | `object` | Yes | Configuration options (see below) |
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `workerUrl` | `string` | **required** | Path to `worker.bundled.js` |
+| `wasmUrl` | `string` | **required** | Path to `msdfgen_wasm.wasm` |
+| `charset` | `string` | `A-Za-z0-9` + space | Characters to include in the atlas |
+| `fontSize` | `number` | `48` | Font size in pixels |
+| `textureSize` | `[number, number]` | `[512, 512]` | Atlas texture dimensions |
+| `fieldRange` | `number` | `4` | Distance field range in pixels |
+| `fixOverlaps` | `boolean` | `true` | Fix overlapping glyph paths |
+| `onProgress` | `function` | - | Callback with progress percentage `(progress: number) => void` |
+
+#### Returns
+
+A Promise that resolves to an object containing:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `font` | `THREE.Font` | Three.js Font instance (use `font.data` for geometry) |
+| `atlas` | `THREE.Texture` | Three.js Texture ready to use with materials |
+
+#### Example with Progress
+
+```js
+generateMSDF('./font.ttf', {
+    workerUrl: '/msdfgen/worker.bundled.js',
+    wasmUrl: '/msdfgen/msdfgen_wasm.wasm',
+    charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,!?',
+    fontSize: 64,
+    textureSize: [1024, 1024],
+    onProgress: (progress) => console.log(`Generating: ${progress}%`),
+}).then(({ font, atlas }) => {
+    // font.data contains the glyph metrics for MSDFTextGeometry
+    // atlas is a THREE.Texture for MSDFTextMaterial
+});
+```
+
+
 ## Troubleshooting
 
-If after trying a basic implementation of msdf text rendering you can't see anything :
-- Check if the text mesh is facing the camera, you can try material.side = THREE.DoubleSide to identify if it's the issue.
-- Check the rotation of the mesh.
-- Check if the scale is consistent with your camera settings.
-- Check the near / far of the camera, the mesh might be frustum culled.
+**Text not visible?**
+
+1. **Check mesh orientation** - The text might be facing away from the camera. Try `material.side = THREE.DoubleSide`
+2. **Check rotation** - MSDF text geometry is created facing +Z. You may need to rotate it
+3. **Check scale** - The geometry units are in pixels. For a typical scene, you might need to scale down (e.g., `mesh.scale.set(0.01, 0.01, 0.01)`)
+4. **Check camera frustum** - Adjust `near`/`far` values if the mesh is being culled
+
+**generateMSDF not working?**
+
+1. **Worker fails to load** - Ensure `worker.bundled.js` is the bundled version (not `worker.js`)
+2. **WASM error** - Verify `wasmUrl` points to the `.wasm` file, not `.js`
+3. **CORS issues** - Worker and WASM files must be served from the same origin or with proper CORS headers
+
+**Random m char in you webgl text?**
+
+Make sure to include a space chat in the charset when generating the bitmap font and atlas.
 
 ## Dependencies
 
--   [comlink](https://www.npmjs.com/package/comlink)
--   [quad-indices](https://www.npmjs.com/package/quad-indices)
--   [word-wrapper](https://www.npmjs.com/package/word-wrapper)
--   [three.js](https://www.npmjs.com/package/three) (peer dependency)
-
+- [three.js](https://www.npmjs.com/package/three) (peer dependency, >= 0.178.0)
+- [comlink](https://www.npmjs.com/package/comlink)
+- [quad-indices](https://www.npmjs.com/package/quad-indices)
+- [word-wrapper](https://www.npmjs.com/package/word-wrapper)
 
 ## Development
 
 ```bash
 npm install
-```
-
-```bash
 npm run dev
 ```
