@@ -11,6 +11,9 @@ import { MSDFTextGeometry, MSDFTextMaterial, generateMSDF } from '../../../src/i
 // Config
 import config from './config';
 
+const WORKER_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js';
+const WASM_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm';
+
 export default class MSDFGenerator {
     constructor() {
         this.canvas = document.querySelector('.js-canvas');
@@ -25,8 +28,8 @@ export default class MSDFGenerator {
         config.fontState = 'Generating: 0%';
 
         generateMSDF(config.fontUrl, {
-            workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js',
-            wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm',
+            workerUrl: WORKER_URL,
+            wasmUrl: WASM_URL,
             onProgress: (progress) => { config.fontState = `Generating: ${progress}%`; }
         }).then(({ font, atlas }) => {
             this.font = font;
@@ -138,8 +141,8 @@ export default class MSDFGenerator {
         config.fontState = 'Generating: 0%';
         
         generateMSDF(config.fontUrl, {
-            workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js',
-            wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm',
+            workerUrl: WORKER_URL,
+            wasmUrl: WASM_URL,
             onProgress: (progress) => { config.fontState = `Generating: ${progress}%`; }
         }).then(({ font, atlas }) => {
             this.font = font;

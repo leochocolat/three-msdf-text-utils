@@ -48715,6 +48715,8 @@ var<${access}> ${name} : ${structName};`;}}/**
     }
   };
 
+  var WORKER_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js';
+  var WASM_URL = 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm';
   var MSDFGenerator = /*#__PURE__*/function () {
     function MSDFGenerator() {
       _classCallCheck(this, MSDFGenerator);
@@ -48733,8 +48735,8 @@ var<${access}> ${name} : ${structName};`;}}/**
         var _this = this;
         config.fontState = 'Generating: 0%';
         generateMSDF(config.fontUrl, {
-          workerUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/worker.bundled.js',
-          wasmUrl: 'https://leochocolat.github.io/three-msdf-text-utils/demo/msdfgen/msdfgen_wasm.wasm',
+          workerUrl: WORKER_URL,
+          wasmUrl: WASM_URL,
           onProgress: function onProgress(progress) {
             config.fontState = "Generating: ".concat(progress, "%");
           }
@@ -48915,8 +48917,8 @@ var<${access}> ${name} : ${structName};`;}}/**
         var _this3 = this;
         config.fontState = 'Generating: 0%';
         generateMSDF(config.fontUrl, {
-          workerUrl: 'http://0.0.0.0:3003/msdfgen/worker.bundled.js',
-          wasmUrl: 'http://0.0.0.0:3003/msdfgen/msdfgen_wasm.wasm',
+          workerUrl: WORKER_URL,
+          wasmUrl: WASM_URL,
           onProgress: function onProgress(progress) {
             config.fontState = "Generating: ".concat(progress, "%");
           }
