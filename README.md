@@ -504,3 +504,4 @@ npm run dev
 - [Gleec](https://gleec.com/) by [Immersive Garden](https://immersive-g.com/)
 - [Gleec text transition effect](https://www.youtube.com/watch?v=NRheDOjkOs8) by [Yuri Artiukh](https://gist.github.com/akella)
 - [Cosmic Shelter](https://cosmicshelter.com/studio) by Cosmic Shelter
+- [Aten7](https://www.aten7.com/) by [Immersive Garden](https://immersive-g.com/)
