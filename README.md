@@ -497,3 +497,10 @@ Make sure to include a space chat in the charset when generating the bitmap font
 npm install
 npm run dev
 ```
+
+## Use cases
+
+- [WebGPU gommage effect](https://tympanus.net/codrops/2026/01/28/webgpu-gommage-effect-dissolving-msdf-text-into-dust-and-petals-with-three-js-tsl/) by [WallabyMonochrome](https://github.com/WallabyMonochrome)
+- [Gleec](https://gleec.com/) by [Immersive Garden](https://immersive-g.com/)
+- [Gleec text transition effect](https://www.youtube.com/watch?v=NRheDOjkOs8) by [Yuri Artiukh](https://gist.github.com/akella)
+- [Cosmic Shelter](https://cosmicshelter.com/studio) by Cosmic Shelter
