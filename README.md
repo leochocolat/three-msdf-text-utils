@@ -498,11 +498,12 @@ npm install
 npm run dev
 ```
 
-## Use cases
+## Use cases & tutorials
 
-- [WebGPU gommage effect](https://tympanus.net/codrops/2026/01/28/webgpu-gommage-effect-dissolving-msdf-text-into-dust-and-petals-with-three-js-tsl/) by [WallabyMonochrome](https://github.com/WallabyMonochrome)
-- [Gleec](https://gleec.com/) by [Immersive Garden](https://immersive-g.com/)
-- [Gleec text transition effect](https://www.youtube.com/watch?v=NRheDOjkOs8) by [Yuri Artiukh](https://gist.github.com/akella)
-- [Cosmic Shelter](https://cosmicshelter.com/studio) by Cosmic Shelter
+- [Immersive Garden](https://immersive-g.com/) by Immersive Garden
 - [Aten7](https://www.aten7.com/) by [Immersive Garden](https://immersive-g.com/)
 - [100 Lost Species](https://www.100lostspecies.com/) by [Immersive Garden](https://immersive-g.com/)
+- [Gleec](https://gleec.com/) by [Immersive Garden](https://immersive-g.com/)
+- [Gleec text transition effect](https://www.youtube.com/watch?v=NRheDOjkOs8) by [Yuri Artiukh](https://gist.github.com/akella)
+- [WebGPU gommage effect](https://tympanus.net/codrops/2026/01/28/webgpu-gommage-effect-dissolving-msdf-text-into-dust-and-petals-with-three-js-tsl/) by [WallabyMonochrome](https://github.com/WallabyMonochrome)
+- [Cosmic Shelter](https://cosmicshelter.com/studio) by Cosmic Shelter
