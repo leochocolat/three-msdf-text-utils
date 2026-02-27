@@ -25,7 +25,7 @@ Forked from [three-bmfont-text](https://github.com/Jam3/three-bmfont-text).
 - [Editor](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=editor)
 - [Reveal](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=reveal)
 - [WebGPU](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=webgpu)
-- [MSDF Generator](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator)
+- [MSDF Generator](https://msdf-font-generator.leomouraire.com/)
 
 ## Getting Font Assets
 
@@ -36,8 +36,9 @@ MSDF text rendering requires two assets: bitmap font data (glyph metrics) and an
 Pre-generating assets gives you full control over quality and reduces runtime overhead.
 
 **Tools:**
-- [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml) - CLI tool
+- [Online MSDF Font Generator](https://msdf-font-generator.leomouraire.com/) - Web-based tool
 - [Online generator](https://msdf-bmfont.donmccurdy.com/) - Web-based tool
+- [msdf-bmfont-xml](https://github.com/soimy/msdf-bmfont-xml) - CLI tool
 - [msdf-font-factory](https://github.com/leochocolat/msdf-font-factory) - Ready-to-use fonts and generation scripts
 
 ### Option 2: Runtime Generation with `generateMSDF`
@@ -77,7 +78,7 @@ generateMSDF('./fonts/roboto.ttf', {
 });
 ```
 
-See the [live demo](https://leochocolat.github.io/three-msdf-text-utils/demo/?demo=msdf-generator) and [source code](https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes/MSDFGenerator/index.js) for a complete example with font switching.
+See the [live demo](https://msdf-font-generator.leomouraire.com/) and [source code](https://github.com/leochocolat/three-msdf-text-utils/blob/main/demo/scenes/MSDFGenerator/index.js) for a complete example with font switching.
 
 More details about this can be found here [@zappar/msdf-generator](https://www.npmjs.com/package/@zappar/msdf-generator)
 
