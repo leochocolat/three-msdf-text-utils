@@ -395,6 +395,8 @@ material.uniforms.uMap.value = atlas;
 It extends from Three.js WebGPU NodeMaterial
 
 ```js
+import { MSDFTextNodeMaterial } from 'three-msdf-text-utils/webgpu';
+
 const material = new MSDFTextNodeMaterial({ map: atlas, color: '#ff0000' });
 
 // Here no uniforms object, you can access materials properties directly.

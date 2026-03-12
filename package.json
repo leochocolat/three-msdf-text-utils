@@ -1,6 +1,6 @@
 {
   "name": "three-msdf-text-utils",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Utility classes for text rendering in Three.js using MSDF (multi-channel signed distance fields) and bitmap fonts. Includes geometry with rich attributes for animations and WebGPU support.",
   "keywords": [
     "three",
@@ -20,7 +20,20 @@
     "glsl"
   ],
   "main": "build/bundle.js",
+  "module": "build/bundle.js",
   "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./build/bundle.js",
+      "require": "./build/bundle.js",
+      "types": "./types/index.d.ts"
+    },
+    "./webgpu": {
+      "import": "./build/webgpu.js",
+      "require": "./build/webgpu.js",
+      "types": "./types/webgpu.d.ts"
+    }
+  },
   "scripts": {
     "dev": "rollup --config ./rollup.dev.config.js --watch",
     "build": "rollup --config ./rollup.build.config.js",
