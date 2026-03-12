@@ -10,7 +10,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { Pane } from 'tweakpane';
 
 // Lib
-import { MSDFTextGeometry, MSDFTextNodeMaterial } from '../../../src/index';
+import { MSDFTextGeometry, MSDFTextNodeMaterial } from '../../../src/webgpu';
 
 // Config
 import config from './config';

@@ -24882,6 +24882,1290 @@ void main() {
     return _createClass(MSDFTextMaterial);
   }(ShaderMaterial);
 
+  /**
+   * @license
+   * Copyright 2019 Google LLC
+   * SPDX-License-Identifier: Apache-2.0
+   */
+  const proxyMarker = Symbol("Comlink.proxy");
+  const createEndpoint = Symbol("Comlink.endpoint");
+  const releaseProxy = Symbol("Comlink.releaseProxy");
+  const finalizer = Symbol("Comlink.finalizer");
+  const throwMarker = Symbol("Comlink.thrown");
+  const isObject = val => typeof val === "object" && val !== null || typeof val === "function";
+  /**
+   * Internal transfer handle to handle objects marked to proxy.
+   */
+  const proxyTransferHandler = {
+    canHandle: val => isObject(val) && val[proxyMarker],
+    serialize(obj) {
+      const {
+        port1,
+        port2
+      } = new MessageChannel();
+      expose(obj, port1);
+      return [port2, [port2]];
+    },
+    deserialize(port) {
+      port.start();
+      return wrap(port);
+    }
+  };
+  /**
+   * Internal transfer handler to handle thrown exceptions.
+   */
+  const throwTransferHandler = {
+    canHandle: value => isObject(value) && throwMarker in value,
+    serialize({
+      value
+    }) {
+      let serialized;
+      if (value instanceof Error) {
+        serialized = {
+          isError: true,
+          value: {
+            message: value.message,
+            name: value.name,
+            stack: value.stack
+          }
+        };
+      } else {
+        serialized = {
+          isError: false,
+          value
+        };
+      }
+      return [serialized, []];
+    },
+    deserialize(serialized) {
+      if (serialized.isError) {
+        throw Object.assign(new Error(serialized.value.message), serialized.value);
+      }
+      throw serialized.value;
+    }
+  };
+  /**
+   * Allows customizing the serialization of certain values.
+   */
+  const transferHandlers = new Map([["proxy", proxyTransferHandler], ["throw", throwTransferHandler]]);
+  function isAllowedOrigin(allowedOrigins, origin) {
+    for (const allowedOrigin of allowedOrigins) {
+      if (origin === allowedOrigin || allowedOrigin === "*") {
+        return true;
+      }
+      if (allowedOrigin instanceof RegExp && allowedOrigin.test(origin)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function expose(obj, ep = globalThis, allowedOrigins = ["*"]) {
+    ep.addEventListener("message", function callback(ev) {
+      if (!ev || !ev.data) {
+        return;
+      }
+      if (!isAllowedOrigin(allowedOrigins, ev.origin)) {
+        console.warn(`Invalid origin '${ev.origin}' for comlink proxy`);
+        return;
+      }
+      const {
+        id,
+        type,
+        path
+      } = Object.assign({
+        path: []
+      }, ev.data);
+      const argumentList = (ev.data.argumentList || []).map(fromWireValue);
+      let returnValue;
+      try {
+        const parent = path.slice(0, -1).reduce((obj, prop) => obj[prop], obj);
+        const rawValue = path.reduce((obj, prop) => obj[prop], obj);
+        switch (type) {
+          case "GET" /* MessageType.GET */:
+            {
+              returnValue = rawValue;
+            }
+            break;
+          case "SET" /* MessageType.SET */:
+            {
+              parent[path.slice(-1)[0]] = fromWireValue(ev.data.value);
+              returnValue = true;
+            }
+            break;
+          case "APPLY" /* MessageType.APPLY */:
+            {
+              returnValue = rawValue.apply(parent, argumentList);
+            }
+            break;
+          case "CONSTRUCT" /* MessageType.CONSTRUCT */:
+            {
+              const value = new rawValue(...argumentList);
+              returnValue = proxy(value);
+            }
+            break;
+          case "ENDPOINT" /* MessageType.ENDPOINT */:
+            {
+              const {
+                port1,
+                port2
+              } = new MessageChannel();
+              expose(obj, port2);
+              returnValue = transfer(port1, [port1]);
+            }
+            break;
+          case "RELEASE" /* MessageType.RELEASE */:
+            {
+              returnValue = undefined;
+            }
+            break;
+          default:
+            return;
+        }
+      } catch (value) {
+        returnValue = {
+          value,
+          [throwMarker]: 0
+        };
+      }
+      Promise.resolve(returnValue).catch(value => {
+        return {
+          value,
+          [throwMarker]: 0
+        };
+      }).then(returnValue => {
+        const [wireValue, transferables] = toWireValue(returnValue);
+        ep.postMessage(Object.assign(Object.assign({}, wireValue), {
+          id
+        }), transferables);
+        if (type === "RELEASE" /* MessageType.RELEASE */) {
+          // detach and deactive after sending release response above.
+          ep.removeEventListener("message", callback);
+          closeEndPoint(ep);
+          if (finalizer in obj && typeof obj[finalizer] === "function") {
+            obj[finalizer]();
+          }
+        }
+      }).catch(error => {
+        // Send Serialization Error To Caller
+        const [wireValue, transferables] = toWireValue({
+          value: new TypeError("Unserializable return value"),
+          [throwMarker]: 0
+        });
+        ep.postMessage(Object.assign(Object.assign({}, wireValue), {
+          id
+        }), transferables);
+      });
+    });
+    if (ep.start) {
+      ep.start();
+    }
+  }
+  function isMessagePort(endpoint) {
+    return endpoint.constructor.name === "MessagePort";
+  }
+  function closeEndPoint(endpoint) {
+    if (isMessagePort(endpoint)) endpoint.close();
+  }
+  function wrap(ep, target) {
+    const pendingListeners = new Map();
+    ep.addEventListener("message", function handleMessage(ev) {
+      const {
+        data
+      } = ev;
+      if (!data || !data.id) {
+        return;
+      }
+      const resolver = pendingListeners.get(data.id);
+      if (!resolver) {
+        return;
+      }
+      try {
+        resolver(data);
+      } finally {
+        pendingListeners.delete(data.id);
+      }
+    });
+    return createProxy(ep, pendingListeners, [], target);
+  }
+  function throwIfProxyReleased(isReleased) {
+    if (isReleased) {
+      throw new Error("Proxy has been released and is not useable");
+    }
+  }
+  function releaseEndpoint(ep) {
+    return requestResponseMessage(ep, new Map(), {
+      type: "RELEASE" /* MessageType.RELEASE */
+    }).then(() => {
+      closeEndPoint(ep);
+    });
+  }
+  const proxyCounter = new WeakMap();
+  const proxyFinalizers = "FinalizationRegistry" in globalThis && new FinalizationRegistry(ep => {
+    const newCount = (proxyCounter.get(ep) || 0) - 1;
+    proxyCounter.set(ep, newCount);
+    if (newCount === 0) {
+      releaseEndpoint(ep);
+    }
+  });
+  function registerProxy(proxy, ep) {
+    const newCount = (proxyCounter.get(ep) || 0) + 1;
+    proxyCounter.set(ep, newCount);
+    if (proxyFinalizers) {
+      proxyFinalizers.register(proxy, ep, proxy);
+    }
+  }
+  function unregisterProxy(proxy) {
+    if (proxyFinalizers) {
+      proxyFinalizers.unregister(proxy);
+    }
+  }
+  function createProxy(ep, pendingListeners, path = [], target = function () {}) {
+    let isProxyReleased = false;
+    const proxy = new Proxy(target, {
+      get(_target, prop) {
+        throwIfProxyReleased(isProxyReleased);
+        if (prop === releaseProxy) {
+          return () => {
+            unregisterProxy(proxy);
+            releaseEndpoint(ep);
+            pendingListeners.clear();
+            isProxyReleased = true;
+          };
+        }
+        if (prop === "then") {
+          if (path.length === 0) {
+            return {
+              then: () => proxy
+            };
+          }
+          const r = requestResponseMessage(ep, pendingListeners, {
+            type: "GET" /* MessageType.GET */,
+            path: path.map(p => p.toString())
+          }).then(fromWireValue);
+          return r.then.bind(r);
+        }
+        return createProxy(ep, pendingListeners, [...path, prop]);
+      },
+      set(_target, prop, rawValue) {
+        throwIfProxyReleased(isProxyReleased);
+        // FIXME: ES6 Proxy Handler `set` methods are supposed to return a
+        // boolean. To show good will, we return true asynchronously ¯\_(ツ)_/¯
+        const [value, transferables] = toWireValue(rawValue);
+        return requestResponseMessage(ep, pendingListeners, {
+          type: "SET" /* MessageType.SET */,
+          path: [...path, prop].map(p => p.toString()),
+          value
+        }, transferables).then(fromWireValue);
+      },
+      apply(_target, _thisArg, rawArgumentList) {
+        throwIfProxyReleased(isProxyReleased);
+        const last = path[path.length - 1];
+        if (last === createEndpoint) {
+          return requestResponseMessage(ep, pendingListeners, {
+            type: "ENDPOINT" /* MessageType.ENDPOINT */
+          }).then(fromWireValue);
+        }
+        // We just pretend that `bind()` didn’t happen.
+        if (last === "bind") {
+          return createProxy(ep, pendingListeners, path.slice(0, -1));
+        }
+        const [argumentList, transferables] = processArguments(rawArgumentList);
+        return requestResponseMessage(ep, pendingListeners, {
+          type: "APPLY" /* MessageType.APPLY */,
+          path: path.map(p => p.toString()),
+          argumentList
+        }, transferables).then(fromWireValue);
+      },
+      construct(_target, rawArgumentList) {
+        throwIfProxyReleased(isProxyReleased);
+        const [argumentList, transferables] = processArguments(rawArgumentList);
+        return requestResponseMessage(ep, pendingListeners, {
+          type: "CONSTRUCT" /* MessageType.CONSTRUCT */,
+          path: path.map(p => p.toString()),
+          argumentList
+        }, transferables).then(fromWireValue);
+      }
+    });
+    registerProxy(proxy, ep);
+    return proxy;
+  }
+  function myFlat(arr) {
+    return Array.prototype.concat.apply([], arr);
+  }
+  function processArguments(argumentList) {
+    const processed = argumentList.map(toWireValue);
+    return [processed.map(v => v[0]), myFlat(processed.map(v => v[1]))];
+  }
+  const transferCache = new WeakMap();
+  function transfer(obj, transfers) {
+    transferCache.set(obj, transfers);
+    return obj;
+  }
+  function proxy(obj) {
+    return Object.assign(obj, {
+      [proxyMarker]: true
+    });
+  }
+  function toWireValue(value) {
+    for (const [name, handler] of transferHandlers) {
+      if (handler.canHandle(value)) {
+        const [serializedValue, transferables] = handler.serialize(value);
+        return [{
+          type: "HANDLER" /* WireValueType.HANDLER */,
+          name,
+          value: serializedValue
+        }, transferables];
+      }
+    }
+    return [{
+      type: "RAW" /* WireValueType.RAW */,
+      value
+    }, transferCache.get(value) || []];
+  }
+  function fromWireValue(value) {
+    switch (value.type) {
+      case "HANDLER" /* WireValueType.HANDLER */:
+        return transferHandlers.get(value.name).deserialize(value.value);
+      case "RAW" /* WireValueType.RAW */:
+        return value.value;
+    }
+  }
+  function requestResponseMessage(ep, pendingListeners, msg, transfers) {
+    return new Promise(resolve => {
+      const id = generateUUID();
+      pendingListeners.set(id, resolve);
+      if (ep.start) {
+        ep.start();
+      }
+      ep.postMessage(Object.assign({
+        id
+      }, msg), transfers);
+    });
+  }
+  function generateUUID() {
+    return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
+  }
+
+  // src/worker-client.ts
+  var MSDFGeneratorWorkerClient = class {
+    worker;
+    api;
+    initPromise;
+    constructor(workerUrl, wasmBinaryUrl) {
+      this.worker = new Worker(workerUrl, {
+        type: "module"
+      });
+      this.api = wrap(this.worker);
+      this.initPromise = this.api.initialize(wasmBinaryUrl);
+    }
+    initialize = () => this.initPromise;
+    loadFont = async fontData => {
+      await this.initPromise;
+      return this.api.loadFont(fontData);
+    };
+    generateAtlas = options => this.api.generateAtlas(options);
+    exportJSON = options => this.api.exportJSON(options);
+    dispose = () => this.api.dispose();
+    generateMSDFAtlas = options => this.api.generateMSDFAtlas(options);
+    generateMSDFFont = options => this.api.generateMSDFFont(options);
+    terminate = () => this.worker.terminate();
+  };
+
+  // src/MSDFGenerator.ts
+  var MSDF = class {
+    static Encoder = new TextEncoder();
+    client = null;
+    workerUrl;
+    wasmUrl;
+    initialized = false;
+    constructor(config = {}) {
+      this.workerUrl = config.workerUrl || new URL("./worker.js", (typeof document === 'undefined' && typeof location === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : typeof document === 'undefined' ? location.href : (_documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === 'SCRIPT' && _documentCurrentScript.src || new URL('bundle-demo.js', document.baseURI).href))).href;
+      this.wasmUrl = config.wasmUrl;
+    }
+    async initialize() {
+      if (this.initialized) return;
+      this.client = new MSDFGeneratorWorkerClient(this.workerUrl, this.wasmUrl);
+      await this.client.initialize();
+      this.initialized = true;
+    }
+    async generate(options) {
+      if (!this.client || !this.initialized) {
+        throw new Error("MSDF not initialized. Call initialize() first.");
+      }
+      if (options.fonts) return this.generateMultiple(options);
+      return this.generateSingle(options);
+    }
+    async generateSingle(options) {
+      const {
+        onProgress,
+        ...workerOptions
+      } = options;
+      await this.client.loadFont(workerOptions.font);
+      const atlas = await this.client.generateAtlas(workerOptions);
+      const json = await this.client.exportJSON({
+        atlas,
+        fontSize: options.fontSize || 48
+      });
+      const blob = await this.atlasToBlob(atlas);
+      const base64 = await this.blobToBase64(blob);
+      const jsonWithInlinedTexture = {
+        ...json,
+        pages: [`data:image/png;base64,${base64}`]
+      };
+      onProgress?.(100, 1, 1);
+      return this.toFontFamily(jsonWithInlinedTexture, atlas.info.name || "font", atlas.info.weight || 400);
+    }
+    // TODO - We should worker-pool this, wasm bit is tricky tho
+    async generateMultiple(options) {
+      const {
+        fonts,
+        onProgress,
+        ...globalOptions
+      } = options;
+      if (!fonts || fonts.length === 0) throw new Error("No fonts provided");
+      const result = {};
+      let completed = 0;
+      const total = fonts.length;
+      for (const fontConfig of fonts) {
+        const {
+          font,
+          ...fontOptions
+        } = fontConfig;
+        const mergedOptions = {
+          ...globalOptions,
+          ...fontOptions,
+          font,
+          charset: fontOptions.charset ?? globalOptions.charset ?? ""
+        };
+        if (!mergedOptions.charset) throw new Error("charset is required globally or per-font");
+        const fontFamily = await this.generateSingle(mergedOptions);
+        for (const [fontName, weights] of Object.entries(fontFamily)) {
+          for (const [weight, fontData] of Object.entries(weights)) {
+            const weightNum = Number(weight);
+            if (result[fontName]?.[weightNum]) {
+              console.warn(`Duplicate font: ${fontName} (${weightNum}). Overwriting.`);
+            }
+            if (!result[fontName]) result[fontName] = {};
+            result[fontName][weightNum] = fontData;
+          }
+        }
+        completed++;
+        onProgress?.(Math.round(completed / total * 100), completed, total);
+      }
+      return result;
+    }
+    async generateAtlas(options) {
+      if (!this.client || !this.initialized) {
+        throw new Error("MSDF not initialized. Call initialize() first.");
+      }
+      const {
+        onProgress,
+        ...workerOptions
+      } = options;
+      await this.client.loadFont(workerOptions.font);
+      return await this.client.generateAtlas(workerOptions);
+    }
+    async dispose() {
+      if (this.client) {
+        await this.client.dispose();
+        this.client.terminate();
+        this.client = null;
+        this.initialized = false;
+      }
+    }
+    async toFontFamily(json, fontName, fontWeight) {
+      return {
+        [fontName]: {
+          [fontWeight]: json
+        }
+      };
+    }
+    atlasToBlob(atlas) {
+      const canvas = document.createElement("canvas");
+      canvas.width = atlas.textureSize[0];
+      canvas.height = atlas.textureSize[1];
+      canvas.getContext("2d").putImageData(atlas.texture, 0, 0);
+      return new Promise((resolve, reject) => {
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Failed to create blob")), "image/png");
+      });
+    }
+    blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+  };
+
+  var defaultOptions$1 = {
+    charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ',
+    fontSize: 48,
+    textureSize: [512, 512],
+    fieldRange: 4,
+    fixOverlaps: true,
+    onProgress: function onProgress() {}
+  };
+  var generateMSDF = /*#__PURE__*/function () {
+    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(fontPath) {
+      var options,
+        parsedOptions,
+        msdf,
+        req,
+        ab,
+        fontBuffer,
+        result,
+        fontName,
+        fontWeight,
+        fontData,
+        atlasBase64,
+        atlas,
+        _args = arguments;
+      return _regenerator().w(function (_context) {
+        while (1) switch (_context.n) {
+          case 0:
+            options = _args.length > 1 && _args[1] !== undefined ? _args[1] : {};
+            parsedOptions = _objectSpread2(_objectSpread2({}, defaultOptions$1), options);
+            msdf = new MSDF({
+              workerUrl: parsedOptions.workerUrl,
+              wasmUrl: parsedOptions.wasmUrl
+            });
+            _context.n = 1;
+            return msdf.initialize();
+          case 1:
+            _context.n = 2;
+            return fetch(fontPath);
+          case 2:
+            req = _context.v;
+            _context.n = 3;
+            return req.arrayBuffer();
+          case 3:
+            ab = _context.v;
+            fontBuffer = new Uint8Array(ab); // Generate MSDF atlas
+            _context.n = 4;
+            return msdf.generate({
+              font: fontBuffer,
+              charset: parsedOptions.charset,
+              fontSize: parsedOptions.fontSize,
+              textureSize: parsedOptions.textureSize,
+              fieldRange: parsedOptions.fieldRange,
+              fixOverlaps: parsedOptions.fixOverlaps,
+              onProgress: parsedOptions.onProgress
+            });
+          case 4:
+            result = _context.v;
+            _context.n = 5;
+            return msdf.dispose();
+          case 5:
+            fontName = Object.keys(result)[0];
+            fontWeight = Object.keys(result[fontName])[0];
+            fontData = result[fontName][fontWeight];
+            atlasBase64 = fontData.pages[0];
+            _context.n = 6;
+            return new Promise(function (resolve, reject) {
+              var image = new Image();
+              image.onload = function () {
+                var texture = new Texture(image);
+                texture.needsUpdate = true;
+                resolve(texture);
+              };
+              image.onerror = reject;
+              image.src = atlasBase64;
+            });
+          case 6:
+            atlas = _context.v;
+            return _context.a(2, {
+              font: new Font(fontData),
+              atlas: atlas
+            });
+        }
+      }, _callee);
+    }));
+    return function generateMSDF(_x) {
+      return _ref.apply(this, arguments);
+    };
+  }();
+
+  var config$5 = {
+    name: 'Basic',
+    text: 'Basic example',
+    settings: {
+      color: '#ffffff'
+    }
+  };
+
+  var Basic = /*#__PURE__*/function () {
+    function Basic() {
+      _classCallCheck(this, Basic);
+      this.canvas = document.querySelector('.js-canvas');
+      this.renderer = null;
+      this.scene = null;
+      this.camera = null;
+      this.controls = null;
+      this.debugger = new Pane({
+        title: "".concat(config$5.name, " Example")
+      });
+    }
+    return _createClass(Basic, [{
+      key: "start",
+      value: function start() {
+        this.setupEventListeners();
+        this.setup();
+        this.setupText();
+        this.update();
+      }
+    }, {
+      key: "setup",
+      value: function setup() {
+        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera.position.z = 1000;
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({
+          canvas: this.canvas,
+          antialias: true
+        });
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }, {
+      key: "setupText",
+      value: function setupText() {
+        var _this = this;
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        Promise.all(promises).then(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+            atlas = _ref2[0],
+            font = _ref2[1];
+          var geometry = new MSDFTextGeometry({
+            text: config$5.text,
+            font: font.data,
+            width: 1000,
+            align: 'center'
+          });
+          var material = new MSDFTextMaterial();
+          material.uniforms.uMap.value = atlas;
+          material.side = DoubleSide;
+          var mesh = new Mesh(geometry, material);
+          mesh.rotation.x = Math.PI;
+          var scale = 3;
+          mesh.position.x = -geometry.layout.width / 2 * scale;
+          mesh.position.y = -geometry.layout.height / 2 * scale;
+          mesh.scale.set(scale, scale, scale);
+          _this.scene.add(mesh);
+
+          // Debug
+          var debugFolderCommon = _this.debugger.addFolder({
+            title: 'Common'
+          });
+          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
+            label: 'Opacity',
+            min: 0,
+            max: 1
+          });
+          debugFolderCommon.addBinding(config$5.settings, 'color', {
+            label: 'Color'
+          }).on('change', function () {
+            material.uniforms.uColor.value.set(config$5.settings.color);
+          });
+          var debugFolderRendering = _this.debugger.addFolder({
+            title: 'Rendering'
+          });
+          debugFolderRendering.addBinding(material.defines, 'IS_SMALL', {
+            label: 'Is small'
+          }).on('change', function () {
+            material.needsUpdate = true;
+          });
+          debugFolderRendering.addBinding(material.uniforms.uAlphaTest, 'value', {
+            label: 'Alpha test',
+            min: 0,
+            max: 1
+          });
+          debugFolderRendering.addBinding(material.uniforms.uThreshold, 'value', {
+            label: 'Threshold (IS_SMALL)',
+            min: 0,
+            max: 1
+          });
+        });
+      }
+    }, {
+      key: "loadFontAtlas",
+      value: function loadFontAtlas(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new TextureLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "loadFont",
+      value: function loadFont(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new FontLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        this.render();
+        requestAnimationFrame(this.update.bind(this));
+      }
+    }, {
+      key: "setupEventListeners",
+      value: function setupEventListeners() {
+        window.addEventListener('resize', this.resizeHandler.bind(this));
+      }
+    }, {
+      key: "resizeHandler",
+      value: function resizeHandler() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }]);
+  }();
+
+  var config$4 = {
+    name: 'Editor',
+    text: 'Your text here',
+    properties: {
+      align: 'center',
+      width: 1000,
+      letterSpacing: 0,
+      lineHeight: 100
+    },
+    settings: {
+      color: '#ffffff',
+      scale: 2
+    }
+  };
+
+  var Editor = /*#__PURE__*/function () {
+    function Editor() {
+      _classCallCheck(this, Editor);
+      this.canvas = document.querySelector('.js-canvas');
+      this.renderer = null;
+      this.scene = null;
+      this.camera = null;
+      this.controls = null;
+      this.debugger = new Pane({
+        title: "".concat(config$4.name, " Example")
+      });
+    }
+    return _createClass(Editor, [{
+      key: "start",
+      value: function start() {
+        var _this = this;
+        this.loadResources().then(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+            atlas = _ref2[0],
+            font = _ref2[1];
+          _this.font = font;
+          _this.atlas = atlas;
+          _this.setupEventListeners();
+          _this.setup();
+          _this.setupText();
+          _this.setupDebugger();
+          _this.update();
+        });
+      }
+    }, {
+      key: "loadResources",
+      value: function loadResources() {
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        return Promise.all(promises);
+      }
+    }, {
+      key: "setup",
+      value: function setup() {
+        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera.position.z = 1000;
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({
+          canvas: this.canvas,
+          antialias: true
+        });
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }, {
+      key: "setupText",
+      value: function setupText() {
+        this.geometry = new MSDFTextGeometry(_objectSpread2({
+          text: config$4.text,
+          font: this.font.data
+        }, config$4.properties));
+        this.material = new MSDFTextMaterial();
+        this.material.uniforms.uMap.value = this.atlas;
+        this.material.side = DoubleSide;
+        this.mesh = new Mesh(this.geometry, this.material);
+        this.mesh.rotation.x = Math.PI;
+        this.mesh.position.x = -this.geometry.layout.width / 2 * config$4.settings.scale;
+        this.mesh.scale.set(config$4.settings.scale, config$4.settings.scale, config$4.settings.scale);
+        this.scene.add(this.mesh);
+      }
+    }, {
+      key: "setupDebugger",
+      value: function setupDebugger() {
+        var _this2 = this;
+        this.debugger.addBinding(config$4, 'text', {
+          title: 'Text'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+        this.debugger.addBinding(config$4.settings, 'scale', {
+          title: 'Scale'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+
+        // Properties
+        var debugFolderProperties = this.debugger.addFolder({
+          title: 'Properties'
+        });
+        debugFolderProperties.addBinding(config$4.properties, 'width').on('change', function () {
+          _this2.updateText();
+        });
+        debugFolderProperties.addBinding(config$4.properties, 'align', {
+          options: {
+            left: 'left',
+            center: 'center',
+            right: 'right'
+          }
+        }).on('change', function () {
+          _this2.updateText();
+        });
+        debugFolderProperties.addBinding(config$4.properties, 'letterSpacing', {
+          label: 'letter spacing'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+        debugFolderProperties.addBinding(config$4.properties, 'lineHeight', {
+          label: 'line height'
+        }).on('change', function () {
+          _this2.updateText();
+        });
+
+        // Material
+        var debugFolderMaterial = this.debugger.addFolder({
+          title: 'Material'
+        });
+        var debugFolderCommon = debugFolderMaterial.addFolder({
+          title: 'Common'
+        });
+        debugFolderCommon.addBinding(this.material.uniforms.uOpacity, 'value', {
+          label: 'Opacity',
+          min: 0,
+          max: 1
+        });
+        debugFolderCommon.addBinding(config$4.settings, 'color', {
+          label: 'Color'
+        }).on('change', function () {
+          _this2.material.uniforms.uColor.value.set(config$4.settings.color);
+        });
+        var debugFolderRendering = debugFolderMaterial.addFolder({
+          title: 'Rendering'
+        });
+        debugFolderRendering.addBinding(this.material.defines, 'IS_SMALL', {
+          label: 'Is small'
+        }).on('change', function () {
+          _this2.material.needsUpdate = true;
+        });
+        debugFolderRendering.addBinding(this.material.uniforms.uAlphaTest, 'value', {
+          label: 'Alpha test',
+          min: 0,
+          max: 1
+        });
+        debugFolderRendering.addBinding(this.material.uniforms.uThreshold, 'value', {
+          label: 'Threshold (IS_SMALL)',
+          min: 0,
+          max: 1
+        });
+      }
+    }, {
+      key: "updateText",
+      value: function updateText() {
+        this.geometry.update(_objectSpread2({
+          text: config$4.text
+        }, config$4.properties));
+        this.mesh.position.x = -this.geometry.layout.width / 2 * config$4.settings.scale;
+        this.mesh.scale.set(config$4.settings.scale, config$4.settings.scale, config$4.settings.scale);
+      }
+    }, {
+      key: "loadFontAtlas",
+      value: function loadFontAtlas(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new TextureLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "loadFont",
+      value: function loadFont(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new FontLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        this.render();
+        requestAnimationFrame(this.update.bind(this));
+      }
+    }, {
+      key: "setupEventListeners",
+      value: function setupEventListeners() {
+        window.addEventListener('resize', this.resizeHandler.bind(this));
+      }
+    }, {
+      key: "resizeHandler",
+      value: function resizeHandler() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }]);
+  }();
+
+  var vertex$1 = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float lineIndex;attribute float lineLettersTotal;attribute float lineLetterIndex;attribute float lineWordsTotal;attribute float lineWordIndex;attribute float wordIndex;attribute float letterIndex;varying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;void main(){vec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=lineIndex;vLineLettersTotal=lineLettersTotal;vLineLetterIndex=lineLetterIndex;vLineWordsTotal=lineWordsTotal;vLineWordIndex=lineWordIndex;vWordIndex=wordIndex;vLetterIndex=letterIndex;}"; // eslint-disable-line
+
+  var fragment$1 = "#define GLSLIFY 1\nvarying vec2 vUv;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);vec4 strokedFragColor=vec4(uStrokeColor,uOpacity*border);gl_FragColor=mix(filledFragColor,strokedFragColor,border);}"; // eslint-disable-line
+
+  var config$3 = {
+    name: 'Stroke',
+    text: 'Stroke example',
+    settings: {
+      color: '#000000',
+      strokeColor: '#ffffff'
+    }
+  };
+
+  var Stroke = /*#__PURE__*/function () {
+    function Stroke() {
+      _classCallCheck(this, Stroke);
+      this.canvas = document.querySelector('.js-canvas');
+      this.renderer = null;
+      this.scene = null;
+      this.camera = null;
+      this.controls = null;
+      this.debugger = new Pane({
+        title: "".concat(config$3.name, " Example")
+      });
+    }
+    return _createClass(Stroke, [{
+      key: "start",
+      value: function start() {
+        this.setupEventListeners();
+        this.setup();
+        this.setupText();
+        this.update();
+      }
+    }, {
+      key: "setup",
+      value: function setup() {
+        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera.position.z = 1000;
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({
+          canvas: this.canvas,
+          antialias: true
+        });
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }, {
+      key: "setupText",
+      value: function setupText() {
+        var _this = this;
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        Promise.all(promises).then(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+            atlas = _ref2[0],
+            font = _ref2[1];
+          var geometry = new MSDFTextGeometry({
+            text: config$3.text,
+            font: font.data,
+            width: 1000,
+            align: 'center'
+          });
+          var material = new ShaderMaterial({
+            side: DoubleSide,
+            transparent: true,
+            defines: {
+              IS_SMALL: false
+            },
+            extensions: {
+              derivatives: true
+            },
+            uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes),
+            vertexShader: vertex$1,
+            fragmentShader: fragment$1
+          });
+          material.uniforms.uMap.value = atlas;
+          material.side = DoubleSide;
+          material.uniforms.uColor.value = new Color(config$3.settings.color);
+          material.uniforms.uStrokeColor.value = new Color(config$3.settings.strokeColor);
+          var mesh = new Mesh(geometry, material);
+          mesh.rotation.x = Math.PI;
+          var scale = 3;
+          mesh.position.x = -geometry.layout.width / 2 * scale;
+          mesh.scale.set(scale, scale, scale);
+          _this.scene.add(mesh);
+
+          // Debug
+          var debugFolderCommon = _this.debugger.addFolder({
+            title: 'Common'
+          });
+          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
+            label: 'Opacity',
+            min: 0,
+            max: 1
+          });
+          debugFolderCommon.addBinding(config$3.settings, 'color', {
+            label: 'Color'
+          }).on('change', function () {
+            material.uniforms.uColor.value.set(config$3.settings.color);
+          });
+          var debugFolderStrokes = _this.debugger.addFolder({
+            title: 'Strokes'
+          });
+          debugFolderStrokes.addBinding(config$3.settings, 'strokeColor', {
+            label: 'Color'
+          }).on('change', function () {
+            material.uniforms.uStrokeColor.value.set(config$3.settings.strokeColor);
+          });
+          debugFolderStrokes.addBinding(material.uniforms.uStrokeInsetWidth, 'value', {
+            label: 'Inset width',
+            min: 0,
+            max: 1
+          });
+        });
+      }
+    }, {
+      key: "loadFontAtlas",
+      value: function loadFontAtlas(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new TextureLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "loadFont",
+      value: function loadFont(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new FontLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        this.render();
+        requestAnimationFrame(this.update.bind(this));
+      }
+    }, {
+      key: "setupEventListeners",
+      value: function setupEventListeners() {
+        window.addEventListener('resize', this.resizeHandler.bind(this));
+      }
+    }, {
+      key: "resizeHandler",
+      value: function resizeHandler() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }]);
+  }();
+
+  var vertex = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float lineIndex;attribute float lineLettersTotal;attribute float lineLetterIndex;attribute float lineWordsTotal;attribute float lineWordIndex;attribute float wordIndex;attribute float letterIndex;varying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;void main(){vec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=lineIndex;vLineLettersTotal=lineLettersTotal;vLineLetterIndex=lineLetterIndex;vLineWordsTotal=lineWordsTotal;vLineWordIndex=lineWordIndex;vWordIndex=wordIndex;vLetterIndex=letterIndex;}"; // eslint-disable-line
+
+  var fragment = "#define GLSLIFY 1\nvarying vec2 vUv;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);gl_FragColor=filledFragColor*((vLineLetterIndex+1.0)/vLineLettersTotal);}"; // eslint-disable-line
+
+  var config$2 = {
+    name: 'Reveal',
+    text: 'Reveal Text \n Reveal text',
+    settings: {
+      color: '#ffffff'
+    }
+  };
+
+  var Reveal = /*#__PURE__*/function () {
+    function Reveal() {
+      _classCallCheck(this, Reveal);
+      this.canvas = document.querySelector('.js-canvas');
+      this.renderer = null;
+      this.scene = null;
+      this.camera = null;
+      this.controls = null;
+      this.debugger = new Pane({
+        title: "".concat(config$2.name, " Example")
+      });
+    }
+    return _createClass(Reveal, [{
+      key: "start",
+      value: function start() {
+        this.setupEventListeners();
+        this.setup();
+        this.setupText();
+        this.update();
+      }
+    }, {
+      key: "setup",
+      value: function setup() {
+        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera.position.z = 1000;
+        this.scene = new Scene();
+        this.renderer = new WebGLRenderer({
+          canvas: this.canvas,
+          antialias: true
+        });
+        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.target.set(0, 0, 0);
+        this.controls.update();
+      }
+    }, {
+      key: "setupText",
+      value: function setupText() {
+        var _this = this;
+        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
+        Promise.all(promises).then(function (_ref) {
+          var _ref2 = _slicedToArray(_ref, 2),
+            atlas = _ref2[0],
+            font = _ref2[1];
+          var geometry = new MSDFTextGeometry({
+            text: config$2.text,
+            font: font.data,
+            align: 'center'
+          });
+          var material = new ShaderMaterial({
+            side: DoubleSide,
+            transparent: true,
+            defines: {
+              IS_SMALL: false
+            },
+            extensions: {
+              derivatives: true
+            },
+            uniforms: _objectSpread2(_objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes), {}, {
+              // Layout
+              uLinesTotal: {
+                value: geometry.layout.linesTotal
+              },
+              uLettersTotal: {
+                value: geometry.layout.lettersTotal
+              },
+              uWordsTotal: {
+                value: geometry.layout.wordsTotal
+              }
+            }),
+            vertexShader: vertex,
+            fragmentShader: fragment
+          });
+          material.uniforms.uMap.value = atlas;
+          material.side = DoubleSide;
+          material.uniforms.uColor.value = new Color(config$2.settings.color);
+          material.uniforms.uStrokeColor.value = new Color(config$2.settings.strokeColor);
+          var mesh = new Mesh(geometry, material);
+          mesh.rotation.x = Math.PI;
+          var scale = 3;
+          mesh.position.x = -geometry.layout.width / 2 * scale;
+          mesh.scale.set(scale, scale, scale);
+          _this.scene.add(mesh);
+
+          // Debug
+          var debugFolderCommon = _this.debugger.addFolder({
+            title: 'Common'
+          });
+          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
+            label: 'Opacity',
+            min: 0,
+            max: 1
+          });
+          debugFolderCommon.addBinding(config$2.settings, 'color', {
+            label: 'Color'
+          }).on('change', function () {
+            material.uniforms.uColor.value.set(config$2.settings.color);
+          });
+        });
+      }
+    }, {
+      key: "loadFontAtlas",
+      value: function loadFontAtlas(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new TextureLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "loadFont",
+      value: function loadFont(path) {
+        var promise = new Promise(function (resolve, reject) {
+          var loader = new FontLoader();
+          loader.load(path, resolve);
+        });
+        return promise;
+      }
+    }, {
+      key: "render",
+      value: function render() {
+        this.renderer.render(this.scene, this.camera);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        this.render();
+        requestAnimationFrame(this.update.bind(this));
+      }
+    }, {
+      key: "setupEventListeners",
+      value: function setupEventListeners() {
+        window.addEventListener('resize', this.resizeHandler.bind(this));
+      }
+    }, {
+      key: "resizeHandler",
+      value: function resizeHandler() {
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+      }
+    }]);
+  }();
+
   const refreshUniforms=['alphaMap','alphaTest','anisotropy','anisotropyMap','anisotropyRotation','aoMap','aoMapIntensity','attenuationColor','attenuationDistance','bumpMap','clearcoat','clearcoatMap','clearcoatNormalMap','clearcoatNormalScale','clearcoatRoughness','color','dispersion','displacementMap','emissive','emissiveIntensity','emissiveMap','envMap','envMapIntensity','gradientMap','ior','iridescence','iridescenceIOR','iridescenceMap','iridescenceThicknessMap','lightMap','lightMapIntensity','map','matcap','metalness','metalnessMap','normalMap','normalScale','opacity','roughness','roughnessMap','sheen','sheenColor','sheenColorMap','sheenRoughnessMap','shininess','specular','specularColor','specularColorMap','specularIntensity','specularIntensityMap','specularMap','thickness','transmission','transmissionMap'];/**
    * A WeakMap to cache lights data for node materials.
    * Cache lights data by render ID to avoid unnecessary recalculations.
@@ -47152,7 +48436,7 @@ var<${access}> ${name} : ${structName};`;}}/**
   TSL.workingToColorSpace;
   TSL.xor;
 
-  var defaultOptions$1 = {
+  var defaultOptions = {
     transparent: true,
     opacity: 1,
     alphaTest: 0.01,
@@ -47168,7 +48452,7 @@ var<${access}> ${name} : ${structName};`;}}/**
       var _this;
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       _classCallCheck(this, MSDFTextNodeMaterial);
-      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions$1)), options);
+      options = Object.assign(JSON.parse(JSON.stringify(defaultOptions)), options);
       _this = _callSuper(this, MSDFTextNodeMaterial);
 
       /**
@@ -47257,1290 +48541,6 @@ var<${access}> ${name} : ${structName};`;}}/**
     _inherits(MSDFTextNodeMaterial, _NodeMaterial);
     return _createClass(MSDFTextNodeMaterial);
   }(NodeMaterial);
-
-  /**
-   * @license
-   * Copyright 2019 Google LLC
-   * SPDX-License-Identifier: Apache-2.0
-   */
-  const proxyMarker = Symbol("Comlink.proxy");
-  const createEndpoint = Symbol("Comlink.endpoint");
-  const releaseProxy = Symbol("Comlink.releaseProxy");
-  const finalizer = Symbol("Comlink.finalizer");
-  const throwMarker = Symbol("Comlink.thrown");
-  const isObject = val => typeof val === "object" && val !== null || typeof val === "function";
-  /**
-   * Internal transfer handle to handle objects marked to proxy.
-   */
-  const proxyTransferHandler = {
-    canHandle: val => isObject(val) && val[proxyMarker],
-    serialize(obj) {
-      const {
-        port1,
-        port2
-      } = new MessageChannel();
-      expose(obj, port1);
-      return [port2, [port2]];
-    },
-    deserialize(port) {
-      port.start();
-      return wrap(port);
-    }
-  };
-  /**
-   * Internal transfer handler to handle thrown exceptions.
-   */
-  const throwTransferHandler = {
-    canHandle: value => isObject(value) && throwMarker in value,
-    serialize({
-      value
-    }) {
-      let serialized;
-      if (value instanceof Error) {
-        serialized = {
-          isError: true,
-          value: {
-            message: value.message,
-            name: value.name,
-            stack: value.stack
-          }
-        };
-      } else {
-        serialized = {
-          isError: false,
-          value
-        };
-      }
-      return [serialized, []];
-    },
-    deserialize(serialized) {
-      if (serialized.isError) {
-        throw Object.assign(new Error(serialized.value.message), serialized.value);
-      }
-      throw serialized.value;
-    }
-  };
-  /**
-   * Allows customizing the serialization of certain values.
-   */
-  const transferHandlers = new Map([["proxy", proxyTransferHandler], ["throw", throwTransferHandler]]);
-  function isAllowedOrigin(allowedOrigins, origin) {
-    for (const allowedOrigin of allowedOrigins) {
-      if (origin === allowedOrigin || allowedOrigin === "*") {
-        return true;
-      }
-      if (allowedOrigin instanceof RegExp && allowedOrigin.test(origin)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  function expose(obj, ep = globalThis, allowedOrigins = ["*"]) {
-    ep.addEventListener("message", function callback(ev) {
-      if (!ev || !ev.data) {
-        return;
-      }
-      if (!isAllowedOrigin(allowedOrigins, ev.origin)) {
-        console.warn(`Invalid origin '${ev.origin}' for comlink proxy`);
-        return;
-      }
-      const {
-        id,
-        type,
-        path
-      } = Object.assign({
-        path: []
-      }, ev.data);
-      const argumentList = (ev.data.argumentList || []).map(fromWireValue);
-      let returnValue;
-      try {
-        const parent = path.slice(0, -1).reduce((obj, prop) => obj[prop], obj);
-        const rawValue = path.reduce((obj, prop) => obj[prop], obj);
-        switch (type) {
-          case "GET" /* MessageType.GET */:
-            {
-              returnValue = rawValue;
-            }
-            break;
-          case "SET" /* MessageType.SET */:
-            {
-              parent[path.slice(-1)[0]] = fromWireValue(ev.data.value);
-              returnValue = true;
-            }
-            break;
-          case "APPLY" /* MessageType.APPLY */:
-            {
-              returnValue = rawValue.apply(parent, argumentList);
-            }
-            break;
-          case "CONSTRUCT" /* MessageType.CONSTRUCT */:
-            {
-              const value = new rawValue(...argumentList);
-              returnValue = proxy(value);
-            }
-            break;
-          case "ENDPOINT" /* MessageType.ENDPOINT */:
-            {
-              const {
-                port1,
-                port2
-              } = new MessageChannel();
-              expose(obj, port2);
-              returnValue = transfer(port1, [port1]);
-            }
-            break;
-          case "RELEASE" /* MessageType.RELEASE */:
-            {
-              returnValue = undefined;
-            }
-            break;
-          default:
-            return;
-        }
-      } catch (value) {
-        returnValue = {
-          value,
-          [throwMarker]: 0
-        };
-      }
-      Promise.resolve(returnValue).catch(value => {
-        return {
-          value,
-          [throwMarker]: 0
-        };
-      }).then(returnValue => {
-        const [wireValue, transferables] = toWireValue(returnValue);
-        ep.postMessage(Object.assign(Object.assign({}, wireValue), {
-          id
-        }), transferables);
-        if (type === "RELEASE" /* MessageType.RELEASE */) {
-          // detach and deactive after sending release response above.
-          ep.removeEventListener("message", callback);
-          closeEndPoint(ep);
-          if (finalizer in obj && typeof obj[finalizer] === "function") {
-            obj[finalizer]();
-          }
-        }
-      }).catch(error => {
-        // Send Serialization Error To Caller
-        const [wireValue, transferables] = toWireValue({
-          value: new TypeError("Unserializable return value"),
-          [throwMarker]: 0
-        });
-        ep.postMessage(Object.assign(Object.assign({}, wireValue), {
-          id
-        }), transferables);
-      });
-    });
-    if (ep.start) {
-      ep.start();
-    }
-  }
-  function isMessagePort(endpoint) {
-    return endpoint.constructor.name === "MessagePort";
-  }
-  function closeEndPoint(endpoint) {
-    if (isMessagePort(endpoint)) endpoint.close();
-  }
-  function wrap(ep, target) {
-    const pendingListeners = new Map();
-    ep.addEventListener("message", function handleMessage(ev) {
-      const {
-        data
-      } = ev;
-      if (!data || !data.id) {
-        return;
-      }
-      const resolver = pendingListeners.get(data.id);
-      if (!resolver) {
-        return;
-      }
-      try {
-        resolver(data);
-      } finally {
-        pendingListeners.delete(data.id);
-      }
-    });
-    return createProxy(ep, pendingListeners, [], target);
-  }
-  function throwIfProxyReleased(isReleased) {
-    if (isReleased) {
-      throw new Error("Proxy has been released and is not useable");
-    }
-  }
-  function releaseEndpoint(ep) {
-    return requestResponseMessage(ep, new Map(), {
-      type: "RELEASE" /* MessageType.RELEASE */
-    }).then(() => {
-      closeEndPoint(ep);
-    });
-  }
-  const proxyCounter = new WeakMap();
-  const proxyFinalizers = "FinalizationRegistry" in globalThis && new FinalizationRegistry(ep => {
-    const newCount = (proxyCounter.get(ep) || 0) - 1;
-    proxyCounter.set(ep, newCount);
-    if (newCount === 0) {
-      releaseEndpoint(ep);
-    }
-  });
-  function registerProxy(proxy, ep) {
-    const newCount = (proxyCounter.get(ep) || 0) + 1;
-    proxyCounter.set(ep, newCount);
-    if (proxyFinalizers) {
-      proxyFinalizers.register(proxy, ep, proxy);
-    }
-  }
-  function unregisterProxy(proxy) {
-    if (proxyFinalizers) {
-      proxyFinalizers.unregister(proxy);
-    }
-  }
-  function createProxy(ep, pendingListeners, path = [], target = function () {}) {
-    let isProxyReleased = false;
-    const proxy = new Proxy(target, {
-      get(_target, prop) {
-        throwIfProxyReleased(isProxyReleased);
-        if (prop === releaseProxy) {
-          return () => {
-            unregisterProxy(proxy);
-            releaseEndpoint(ep);
-            pendingListeners.clear();
-            isProxyReleased = true;
-          };
-        }
-        if (prop === "then") {
-          if (path.length === 0) {
-            return {
-              then: () => proxy
-            };
-          }
-          const r = requestResponseMessage(ep, pendingListeners, {
-            type: "GET" /* MessageType.GET */,
-            path: path.map(p => p.toString())
-          }).then(fromWireValue);
-          return r.then.bind(r);
-        }
-        return createProxy(ep, pendingListeners, [...path, prop]);
-      },
-      set(_target, prop, rawValue) {
-        throwIfProxyReleased(isProxyReleased);
-        // FIXME: ES6 Proxy Handler `set` methods are supposed to return a
-        // boolean. To show good will, we return true asynchronously ¯\_(ツ)_/¯
-        const [value, transferables] = toWireValue(rawValue);
-        return requestResponseMessage(ep, pendingListeners, {
-          type: "SET" /* MessageType.SET */,
-          path: [...path, prop].map(p => p.toString()),
-          value
-        }, transferables).then(fromWireValue);
-      },
-      apply(_target, _thisArg, rawArgumentList) {
-        throwIfProxyReleased(isProxyReleased);
-        const last = path[path.length - 1];
-        if (last === createEndpoint) {
-          return requestResponseMessage(ep, pendingListeners, {
-            type: "ENDPOINT" /* MessageType.ENDPOINT */
-          }).then(fromWireValue);
-        }
-        // We just pretend that `bind()` didn’t happen.
-        if (last === "bind") {
-          return createProxy(ep, pendingListeners, path.slice(0, -1));
-        }
-        const [argumentList, transferables] = processArguments(rawArgumentList);
-        return requestResponseMessage(ep, pendingListeners, {
-          type: "APPLY" /* MessageType.APPLY */,
-          path: path.map(p => p.toString()),
-          argumentList
-        }, transferables).then(fromWireValue);
-      },
-      construct(_target, rawArgumentList) {
-        throwIfProxyReleased(isProxyReleased);
-        const [argumentList, transferables] = processArguments(rawArgumentList);
-        return requestResponseMessage(ep, pendingListeners, {
-          type: "CONSTRUCT" /* MessageType.CONSTRUCT */,
-          path: path.map(p => p.toString()),
-          argumentList
-        }, transferables).then(fromWireValue);
-      }
-    });
-    registerProxy(proxy, ep);
-    return proxy;
-  }
-  function myFlat(arr) {
-    return Array.prototype.concat.apply([], arr);
-  }
-  function processArguments(argumentList) {
-    const processed = argumentList.map(toWireValue);
-    return [processed.map(v => v[0]), myFlat(processed.map(v => v[1]))];
-  }
-  const transferCache = new WeakMap();
-  function transfer(obj, transfers) {
-    transferCache.set(obj, transfers);
-    return obj;
-  }
-  function proxy(obj) {
-    return Object.assign(obj, {
-      [proxyMarker]: true
-    });
-  }
-  function toWireValue(value) {
-    for (const [name, handler] of transferHandlers) {
-      if (handler.canHandle(value)) {
-        const [serializedValue, transferables] = handler.serialize(value);
-        return [{
-          type: "HANDLER" /* WireValueType.HANDLER */,
-          name,
-          value: serializedValue
-        }, transferables];
-      }
-    }
-    return [{
-      type: "RAW" /* WireValueType.RAW */,
-      value
-    }, transferCache.get(value) || []];
-  }
-  function fromWireValue(value) {
-    switch (value.type) {
-      case "HANDLER" /* WireValueType.HANDLER */:
-        return transferHandlers.get(value.name).deserialize(value.value);
-      case "RAW" /* WireValueType.RAW */:
-        return value.value;
-    }
-  }
-  function requestResponseMessage(ep, pendingListeners, msg, transfers) {
-    return new Promise(resolve => {
-      const id = generateUUID();
-      pendingListeners.set(id, resolve);
-      if (ep.start) {
-        ep.start();
-      }
-      ep.postMessage(Object.assign({
-        id
-      }, msg), transfers);
-    });
-  }
-  function generateUUID() {
-    return new Array(4).fill(0).map(() => Math.floor(Math.random() * Number.MAX_SAFE_INTEGER).toString(16)).join("-");
-  }
-
-  // src/worker-client.ts
-  var MSDFGeneratorWorkerClient = class {
-    worker;
-    api;
-    initPromise;
-    constructor(workerUrl, wasmBinaryUrl) {
-      this.worker = new Worker(workerUrl, {
-        type: "module"
-      });
-      this.api = wrap(this.worker);
-      this.initPromise = this.api.initialize(wasmBinaryUrl);
-    }
-    initialize = () => this.initPromise;
-    loadFont = async fontData => {
-      await this.initPromise;
-      return this.api.loadFont(fontData);
-    };
-    generateAtlas = options => this.api.generateAtlas(options);
-    exportJSON = options => this.api.exportJSON(options);
-    dispose = () => this.api.dispose();
-    generateMSDFAtlas = options => this.api.generateMSDFAtlas(options);
-    generateMSDFFont = options => this.api.generateMSDFFont(options);
-    terminate = () => this.worker.terminate();
-  };
-
-  // src/MSDFGenerator.ts
-  var MSDF = class {
-    static Encoder = new TextEncoder();
-    client = null;
-    workerUrl;
-    wasmUrl;
-    initialized = false;
-    constructor(config = {}) {
-      this.workerUrl = config.workerUrl || new URL("./worker.js", (typeof document === 'undefined' && typeof location === 'undefined' ? require('u' + 'rl').pathToFileURL(__filename).href : typeof document === 'undefined' ? location.href : (_documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === 'SCRIPT' && _documentCurrentScript.src || new URL('bundle-demo.js', document.baseURI).href))).href;
-      this.wasmUrl = config.wasmUrl;
-    }
-    async initialize() {
-      if (this.initialized) return;
-      this.client = new MSDFGeneratorWorkerClient(this.workerUrl, this.wasmUrl);
-      await this.client.initialize();
-      this.initialized = true;
-    }
-    async generate(options) {
-      if (!this.client || !this.initialized) {
-        throw new Error("MSDF not initialized. Call initialize() first.");
-      }
-      if (options.fonts) return this.generateMultiple(options);
-      return this.generateSingle(options);
-    }
-    async generateSingle(options) {
-      const {
-        onProgress,
-        ...workerOptions
-      } = options;
-      await this.client.loadFont(workerOptions.font);
-      const atlas = await this.client.generateAtlas(workerOptions);
-      const json = await this.client.exportJSON({
-        atlas,
-        fontSize: options.fontSize || 48
-      });
-      const blob = await this.atlasToBlob(atlas);
-      const base64 = await this.blobToBase64(blob);
-      const jsonWithInlinedTexture = {
-        ...json,
-        pages: [`data:image/png;base64,${base64}`]
-      };
-      onProgress?.(100, 1, 1);
-      return this.toFontFamily(jsonWithInlinedTexture, atlas.info.name || "font", atlas.info.weight || 400);
-    }
-    // TODO - We should worker-pool this, wasm bit is tricky tho
-    async generateMultiple(options) {
-      const {
-        fonts,
-        onProgress,
-        ...globalOptions
-      } = options;
-      if (!fonts || fonts.length === 0) throw new Error("No fonts provided");
-      const result = {};
-      let completed = 0;
-      const total = fonts.length;
-      for (const fontConfig of fonts) {
-        const {
-          font,
-          ...fontOptions
-        } = fontConfig;
-        const mergedOptions = {
-          ...globalOptions,
-          ...fontOptions,
-          font,
-          charset: fontOptions.charset ?? globalOptions.charset ?? ""
-        };
-        if (!mergedOptions.charset) throw new Error("charset is required globally or per-font");
-        const fontFamily = await this.generateSingle(mergedOptions);
-        for (const [fontName, weights] of Object.entries(fontFamily)) {
-          for (const [weight, fontData] of Object.entries(weights)) {
-            const weightNum = Number(weight);
-            if (result[fontName]?.[weightNum]) {
-              console.warn(`Duplicate font: ${fontName} (${weightNum}). Overwriting.`);
-            }
-            if (!result[fontName]) result[fontName] = {};
-            result[fontName][weightNum] = fontData;
-          }
-        }
-        completed++;
-        onProgress?.(Math.round(completed / total * 100), completed, total);
-      }
-      return result;
-    }
-    async generateAtlas(options) {
-      if (!this.client || !this.initialized) {
-        throw new Error("MSDF not initialized. Call initialize() first.");
-      }
-      const {
-        onProgress,
-        ...workerOptions
-      } = options;
-      await this.client.loadFont(workerOptions.font);
-      return await this.client.generateAtlas(workerOptions);
-    }
-    async dispose() {
-      if (this.client) {
-        await this.client.dispose();
-        this.client.terminate();
-        this.client = null;
-        this.initialized = false;
-      }
-    }
-    async toFontFamily(json, fontName, fontWeight) {
-      return {
-        [fontName]: {
-          [fontWeight]: json
-        }
-      };
-    }
-    atlasToBlob(atlas) {
-      const canvas = document.createElement("canvas");
-      canvas.width = atlas.textureSize[0];
-      canvas.height = atlas.textureSize[1];
-      canvas.getContext("2d").putImageData(atlas.texture, 0, 0);
-      return new Promise((resolve, reject) => {
-        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Failed to create blob")), "image/png");
-      });
-    }
-    blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(",")[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-  };
-
-  var defaultOptions = {
-    charset: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ',
-    fontSize: 48,
-    textureSize: [512, 512],
-    fieldRange: 4,
-    fixOverlaps: true,
-    onProgress: function onProgress() {}
-  };
-  var generateMSDF = /*#__PURE__*/function () {
-    var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(fontPath) {
-      var options,
-        parsedOptions,
-        msdf,
-        req,
-        ab,
-        fontBuffer,
-        result,
-        fontName,
-        fontWeight,
-        fontData,
-        atlasBase64,
-        atlas,
-        _args = arguments;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.n) {
-          case 0:
-            options = _args.length > 1 && _args[1] !== undefined ? _args[1] : {};
-            parsedOptions = _objectSpread2(_objectSpread2({}, defaultOptions), options);
-            msdf = new MSDF({
-              workerUrl: parsedOptions.workerUrl,
-              wasmUrl: parsedOptions.wasmUrl
-            });
-            _context.n = 1;
-            return msdf.initialize();
-          case 1:
-            _context.n = 2;
-            return fetch(fontPath);
-          case 2:
-            req = _context.v;
-            _context.n = 3;
-            return req.arrayBuffer();
-          case 3:
-            ab = _context.v;
-            fontBuffer = new Uint8Array(ab); // Generate MSDF atlas
-            _context.n = 4;
-            return msdf.generate({
-              font: fontBuffer,
-              charset: parsedOptions.charset,
-              fontSize: parsedOptions.fontSize,
-              textureSize: parsedOptions.textureSize,
-              fieldRange: parsedOptions.fieldRange,
-              fixOverlaps: parsedOptions.fixOverlaps,
-              onProgress: parsedOptions.onProgress
-            });
-          case 4:
-            result = _context.v;
-            _context.n = 5;
-            return msdf.dispose();
-          case 5:
-            fontName = Object.keys(result)[0];
-            fontWeight = Object.keys(result[fontName])[0];
-            fontData = result[fontName][fontWeight];
-            atlasBase64 = fontData.pages[0];
-            _context.n = 6;
-            return new Promise(function (resolve, reject) {
-              var image = new Image();
-              image.onload = function () {
-                var texture = new Texture(image);
-                texture.needsUpdate = true;
-                resolve(texture);
-              };
-              image.onerror = reject;
-              image.src = atlasBase64;
-            });
-          case 6:
-            atlas = _context.v;
-            return _context.a(2, {
-              font: new Font(fontData),
-              atlas: atlas
-            });
-        }
-      }, _callee);
-    }));
-    return function generateMSDF(_x) {
-      return _ref.apply(this, arguments);
-    };
-  }();
-
-  var config$5 = {
-    name: 'Basic',
-    text: 'Basic example',
-    settings: {
-      color: '#ffffff'
-    }
-  };
-
-  var Basic = /*#__PURE__*/function () {
-    function Basic() {
-      _classCallCheck(this, Basic);
-      this.canvas = document.querySelector('.js-canvas');
-      this.renderer = null;
-      this.scene = null;
-      this.camera = null;
-      this.controls = null;
-      this.debugger = new Pane({
-        title: "".concat(config$5.name, " Example")
-      });
-    }
-    return _createClass(Basic, [{
-      key: "start",
-      value: function start() {
-        this.setupEventListeners();
-        this.setup();
-        this.setupText();
-        this.update();
-      }
-    }, {
-      key: "setup",
-      value: function setup() {
-        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.camera.position.z = 1000;
-        this.scene = new Scene();
-        this.renderer = new WebGLRenderer({
-          canvas: this.canvas,
-          antialias: true
-        });
-        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
-      }
-    }, {
-      key: "setupText",
-      value: function setupText() {
-        var _this = this;
-        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
-        Promise.all(promises).then(function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 2),
-            atlas = _ref2[0],
-            font = _ref2[1];
-          var geometry = new MSDFTextGeometry({
-            text: config$5.text,
-            font: font.data,
-            width: 1000,
-            align: 'center'
-          });
-          var material = new MSDFTextMaterial();
-          material.uniforms.uMap.value = atlas;
-          material.side = DoubleSide;
-          var mesh = new Mesh(geometry, material);
-          mesh.rotation.x = Math.PI;
-          var scale = 3;
-          mesh.position.x = -geometry.layout.width / 2 * scale;
-          mesh.position.y = -geometry.layout.height / 2 * scale;
-          mesh.scale.set(scale, scale, scale);
-          _this.scene.add(mesh);
-
-          // Debug
-          var debugFolderCommon = _this.debugger.addFolder({
-            title: 'Common'
-          });
-          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
-            label: 'Opacity',
-            min: 0,
-            max: 1
-          });
-          debugFolderCommon.addBinding(config$5.settings, 'color', {
-            label: 'Color'
-          }).on('change', function () {
-            material.uniforms.uColor.value.set(config$5.settings.color);
-          });
-          var debugFolderRendering = _this.debugger.addFolder({
-            title: 'Rendering'
-          });
-          debugFolderRendering.addBinding(material.defines, 'IS_SMALL', {
-            label: 'Is small'
-          }).on('change', function () {
-            material.needsUpdate = true;
-          });
-          debugFolderRendering.addBinding(material.uniforms.uAlphaTest, 'value', {
-            label: 'Alpha test',
-            min: 0,
-            max: 1
-          });
-          debugFolderRendering.addBinding(material.uniforms.uThreshold, 'value', {
-            label: 'Threshold (IS_SMALL)',
-            min: 0,
-            max: 1
-          });
-        });
-      }
-    }, {
-      key: "loadFontAtlas",
-      value: function loadFontAtlas(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new TextureLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "loadFont",
-      value: function loadFont(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new FontLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        this.renderer.render(this.scene, this.camera);
-      }
-    }, {
-      key: "update",
-      value: function update() {
-        this.render();
-        requestAnimationFrame(this.update.bind(this));
-      }
-    }, {
-      key: "setupEventListeners",
-      value: function setupEventListeners() {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
-      }
-    }, {
-      key: "resizeHandler",
-      value: function resizeHandler() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-      }
-    }]);
-  }();
-
-  var config$4 = {
-    name: 'Editor',
-    text: 'Your text here',
-    properties: {
-      align: 'center',
-      width: 1000,
-      letterSpacing: 0,
-      lineHeight: 100
-    },
-    settings: {
-      color: '#ffffff',
-      scale: 2
-    }
-  };
-
-  var Editor = /*#__PURE__*/function () {
-    function Editor() {
-      _classCallCheck(this, Editor);
-      this.canvas = document.querySelector('.js-canvas');
-      this.renderer = null;
-      this.scene = null;
-      this.camera = null;
-      this.controls = null;
-      this.debugger = new Pane({
-        title: "".concat(config$4.name, " Example")
-      });
-    }
-    return _createClass(Editor, [{
-      key: "start",
-      value: function start() {
-        var _this = this;
-        this.loadResources().then(function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 2),
-            atlas = _ref2[0],
-            font = _ref2[1];
-          _this.font = font;
-          _this.atlas = atlas;
-          _this.setupEventListeners();
-          _this.setup();
-          _this.setupText();
-          _this.setupDebugger();
-          _this.update();
-        });
-      }
-    }, {
-      key: "loadResources",
-      value: function loadResources() {
-        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
-        return Promise.all(promises);
-      }
-    }, {
-      key: "setup",
-      value: function setup() {
-        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.camera.position.z = 1000;
-        this.scene = new Scene();
-        this.renderer = new WebGLRenderer({
-          canvas: this.canvas,
-          antialias: true
-        });
-        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
-      }
-    }, {
-      key: "setupText",
-      value: function setupText() {
-        this.geometry = new MSDFTextGeometry(_objectSpread2({
-          text: config$4.text,
-          font: this.font.data
-        }, config$4.properties));
-        this.material = new MSDFTextMaterial();
-        this.material.uniforms.uMap.value = this.atlas;
-        this.material.side = DoubleSide;
-        this.mesh = new Mesh(this.geometry, this.material);
-        this.mesh.rotation.x = Math.PI;
-        this.mesh.position.x = -this.geometry.layout.width / 2 * config$4.settings.scale;
-        this.mesh.scale.set(config$4.settings.scale, config$4.settings.scale, config$4.settings.scale);
-        this.scene.add(this.mesh);
-      }
-    }, {
-      key: "setupDebugger",
-      value: function setupDebugger() {
-        var _this2 = this;
-        this.debugger.addBinding(config$4, 'text', {
-          title: 'Text'
-        }).on('change', function () {
-          _this2.updateText();
-        });
-        this.debugger.addBinding(config$4.settings, 'scale', {
-          title: 'Scale'
-        }).on('change', function () {
-          _this2.updateText();
-        });
-
-        // Properties
-        var debugFolderProperties = this.debugger.addFolder({
-          title: 'Properties'
-        });
-        debugFolderProperties.addBinding(config$4.properties, 'width').on('change', function () {
-          _this2.updateText();
-        });
-        debugFolderProperties.addBinding(config$4.properties, 'align', {
-          options: {
-            left: 'left',
-            center: 'center',
-            right: 'right'
-          }
-        }).on('change', function () {
-          _this2.updateText();
-        });
-        debugFolderProperties.addBinding(config$4.properties, 'letterSpacing', {
-          label: 'letter spacing'
-        }).on('change', function () {
-          _this2.updateText();
-        });
-        debugFolderProperties.addBinding(config$4.properties, 'lineHeight', {
-          label: 'line height'
-        }).on('change', function () {
-          _this2.updateText();
-        });
-
-        // Material
-        var debugFolderMaterial = this.debugger.addFolder({
-          title: 'Material'
-        });
-        var debugFolderCommon = debugFolderMaterial.addFolder({
-          title: 'Common'
-        });
-        debugFolderCommon.addBinding(this.material.uniforms.uOpacity, 'value', {
-          label: 'Opacity',
-          min: 0,
-          max: 1
-        });
-        debugFolderCommon.addBinding(config$4.settings, 'color', {
-          label: 'Color'
-        }).on('change', function () {
-          _this2.material.uniforms.uColor.value.set(config$4.settings.color);
-        });
-        var debugFolderRendering = debugFolderMaterial.addFolder({
-          title: 'Rendering'
-        });
-        debugFolderRendering.addBinding(this.material.defines, 'IS_SMALL', {
-          label: 'Is small'
-        }).on('change', function () {
-          _this2.material.needsUpdate = true;
-        });
-        debugFolderRendering.addBinding(this.material.uniforms.uAlphaTest, 'value', {
-          label: 'Alpha test',
-          min: 0,
-          max: 1
-        });
-        debugFolderRendering.addBinding(this.material.uniforms.uThreshold, 'value', {
-          label: 'Threshold (IS_SMALL)',
-          min: 0,
-          max: 1
-        });
-      }
-    }, {
-      key: "updateText",
-      value: function updateText() {
-        this.geometry.update(_objectSpread2({
-          text: config$4.text
-        }, config$4.properties));
-        this.mesh.position.x = -this.geometry.layout.width / 2 * config$4.settings.scale;
-        this.mesh.scale.set(config$4.settings.scale, config$4.settings.scale, config$4.settings.scale);
-      }
-    }, {
-      key: "loadFontAtlas",
-      value: function loadFontAtlas(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new TextureLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "loadFont",
-      value: function loadFont(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new FontLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        this.renderer.render(this.scene, this.camera);
-      }
-    }, {
-      key: "update",
-      value: function update() {
-        this.render();
-        requestAnimationFrame(this.update.bind(this));
-      }
-    }, {
-      key: "setupEventListeners",
-      value: function setupEventListeners() {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
-      }
-    }, {
-      key: "resizeHandler",
-      value: function resizeHandler() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-      }
-    }]);
-  }();
-
-  var vertex$1 = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float lineIndex;attribute float lineLettersTotal;attribute float lineLetterIndex;attribute float lineWordsTotal;attribute float lineWordIndex;attribute float wordIndex;attribute float letterIndex;varying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;void main(){vec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=lineIndex;vLineLettersTotal=lineLettersTotal;vLineLetterIndex=lineLetterIndex;vLineWordsTotal=lineWordsTotal;vLineWordIndex=lineWordIndex;vWordIndex=wordIndex;vLetterIndex=letterIndex;}"; // eslint-disable-line
-
-  var fragment$1 = "#define GLSLIFY 1\nvarying vec2 vUv;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);vec4 strokedFragColor=vec4(uStrokeColor,uOpacity*border);gl_FragColor=mix(filledFragColor,strokedFragColor,border);}"; // eslint-disable-line
-
-  var config$3 = {
-    name: 'Stroke',
-    text: 'Stroke example',
-    settings: {
-      color: '#000000',
-      strokeColor: '#ffffff'
-    }
-  };
-
-  var Stroke = /*#__PURE__*/function () {
-    function Stroke() {
-      _classCallCheck(this, Stroke);
-      this.canvas = document.querySelector('.js-canvas');
-      this.renderer = null;
-      this.scene = null;
-      this.camera = null;
-      this.controls = null;
-      this.debugger = new Pane({
-        title: "".concat(config$3.name, " Example")
-      });
-    }
-    return _createClass(Stroke, [{
-      key: "start",
-      value: function start() {
-        this.setupEventListeners();
-        this.setup();
-        this.setupText();
-        this.update();
-      }
-    }, {
-      key: "setup",
-      value: function setup() {
-        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.camera.position.z = 1000;
-        this.scene = new Scene();
-        this.renderer = new WebGLRenderer({
-          canvas: this.canvas,
-          antialias: true
-        });
-        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
-      }
-    }, {
-      key: "setupText",
-      value: function setupText() {
-        var _this = this;
-        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
-        Promise.all(promises).then(function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 2),
-            atlas = _ref2[0],
-            font = _ref2[1];
-          var geometry = new MSDFTextGeometry({
-            text: config$3.text,
-            font: font.data,
-            width: 1000,
-            align: 'center'
-          });
-          var material = new ShaderMaterial({
-            side: DoubleSide,
-            transparent: true,
-            defines: {
-              IS_SMALL: false
-            },
-            extensions: {
-              derivatives: true
-            },
-            uniforms: _objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes),
-            vertexShader: vertex$1,
-            fragmentShader: fragment$1
-          });
-          material.uniforms.uMap.value = atlas;
-          material.side = DoubleSide;
-          material.uniforms.uColor.value = new Color(config$3.settings.color);
-          material.uniforms.uStrokeColor.value = new Color(config$3.settings.strokeColor);
-          var mesh = new Mesh(geometry, material);
-          mesh.rotation.x = Math.PI;
-          var scale = 3;
-          mesh.position.x = -geometry.layout.width / 2 * scale;
-          mesh.scale.set(scale, scale, scale);
-          _this.scene.add(mesh);
-
-          // Debug
-          var debugFolderCommon = _this.debugger.addFolder({
-            title: 'Common'
-          });
-          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
-            label: 'Opacity',
-            min: 0,
-            max: 1
-          });
-          debugFolderCommon.addBinding(config$3.settings, 'color', {
-            label: 'Color'
-          }).on('change', function () {
-            material.uniforms.uColor.value.set(config$3.settings.color);
-          });
-          var debugFolderStrokes = _this.debugger.addFolder({
-            title: 'Strokes'
-          });
-          debugFolderStrokes.addBinding(config$3.settings, 'strokeColor', {
-            label: 'Color'
-          }).on('change', function () {
-            material.uniforms.uStrokeColor.value.set(config$3.settings.strokeColor);
-          });
-          debugFolderStrokes.addBinding(material.uniforms.uStrokeInsetWidth, 'value', {
-            label: 'Inset width',
-            min: 0,
-            max: 1
-          });
-        });
-      }
-    }, {
-      key: "loadFontAtlas",
-      value: function loadFontAtlas(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new TextureLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "loadFont",
-      value: function loadFont(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new FontLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        this.renderer.render(this.scene, this.camera);
-      }
-    }, {
-      key: "update",
-      value: function update() {
-        this.render();
-        requestAnimationFrame(this.update.bind(this));
-      }
-    }, {
-      key: "setupEventListeners",
-      value: function setupEventListeners() {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
-      }
-    }, {
-      key: "resizeHandler",
-      value: function resizeHandler() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-      }
-    }]);
-  }();
-
-  var vertex = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute float lineIndex;attribute float lineLettersTotal;attribute float lineLetterIndex;attribute float lineWordsTotal;attribute float lineWordIndex;attribute float wordIndex;attribute float letterIndex;varying vec2 vUv;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;void main(){vec4 mvPosition=vec4(position,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=lineIndex;vLineLettersTotal=lineLettersTotal;vLineLetterIndex=lineLetterIndex;vLineWordsTotal=lineWordsTotal;vLineWordIndex=lineWordIndex;vWordIndex=wordIndex;vLetterIndex=letterIndex;}"; // eslint-disable-line
-
-  var fragment = "#define GLSLIFY 1\nvarying vec2 vUv;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s=texture2D(uMap,vUv).rgb;float sigDist=median(s.r,s.g,s.b)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);gl_FragColor=filledFragColor*((vLineLetterIndex+1.0)/vLineLettersTotal);}"; // eslint-disable-line
-
-  var config$2 = {
-    name: 'Reveal',
-    text: 'Reveal Text \n Reveal text',
-    settings: {
-      color: '#ffffff'
-    }
-  };
-
-  var Reveal = /*#__PURE__*/function () {
-    function Reveal() {
-      _classCallCheck(this, Reveal);
-      this.canvas = document.querySelector('.js-canvas');
-      this.renderer = null;
-      this.scene = null;
-      this.camera = null;
-      this.controls = null;
-      this.debugger = new Pane({
-        title: "".concat(config$2.name, " Example")
-      });
-    }
-    return _createClass(Reveal, [{
-      key: "start",
-      value: function start() {
-        this.setupEventListeners();
-        this.setup();
-        this.setupText();
-        this.update();
-      }
-    }, {
-      key: "setup",
-      value: function setup() {
-        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
-        this.camera.position.z = 1000;
-        this.scene = new Scene();
-        this.renderer = new WebGLRenderer({
-          canvas: this.canvas,
-          antialias: true
-        });
-        this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        this.controls.target.set(0, 0, 0);
-        this.controls.update();
-      }
-    }, {
-      key: "setupText",
-      value: function setupText() {
-        var _this = this;
-        var promises = [this.loadFontAtlas('./fonts/roboto/roboto-regular.png'), this.loadFont('./fonts/roboto/roboto-regular.fnt')];
-        Promise.all(promises).then(function (_ref) {
-          var _ref2 = _slicedToArray(_ref, 2),
-            atlas = _ref2[0],
-            font = _ref2[1];
-          var geometry = new MSDFTextGeometry({
-            text: config$2.text,
-            font: font.data,
-            align: 'center'
-          });
-          var material = new ShaderMaterial({
-            side: DoubleSide,
-            transparent: true,
-            defines: {
-              IS_SMALL: false
-            },
-            extensions: {
-              derivatives: true
-            },
-            uniforms: _objectSpread2(_objectSpread2(_objectSpread2(_objectSpread2({}, uniforms.common), uniforms.rendering), uniforms.strokes), {}, {
-              // Layout
-              uLinesTotal: {
-                value: geometry.layout.linesTotal
-              },
-              uLettersTotal: {
-                value: geometry.layout.lettersTotal
-              },
-              uWordsTotal: {
-                value: geometry.layout.wordsTotal
-              }
-            }),
-            vertexShader: vertex,
-            fragmentShader: fragment
-          });
-          material.uniforms.uMap.value = atlas;
-          material.side = DoubleSide;
-          material.uniforms.uColor.value = new Color(config$2.settings.color);
-          material.uniforms.uStrokeColor.value = new Color(config$2.settings.strokeColor);
-          var mesh = new Mesh(geometry, material);
-          mesh.rotation.x = Math.PI;
-          var scale = 3;
-          mesh.position.x = -geometry.layout.width / 2 * scale;
-          mesh.scale.set(scale, scale, scale);
-          _this.scene.add(mesh);
-
-          // Debug
-          var debugFolderCommon = _this.debugger.addFolder({
-            title: 'Common'
-          });
-          debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', {
-            label: 'Opacity',
-            min: 0,
-            max: 1
-          });
-          debugFolderCommon.addBinding(config$2.settings, 'color', {
-            label: 'Color'
-          }).on('change', function () {
-            material.uniforms.uColor.value.set(config$2.settings.color);
-          });
-        });
-      }
-    }, {
-      key: "loadFontAtlas",
-      value: function loadFontAtlas(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new TextureLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "loadFont",
-      value: function loadFont(path) {
-        var promise = new Promise(function (resolve, reject) {
-          var loader = new FontLoader();
-          loader.load(path, resolve);
-        });
-        return promise;
-      }
-    }, {
-      key: "render",
-      value: function render() {
-        this.renderer.render(this.scene, this.camera);
-      }
-    }, {
-      key: "update",
-      value: function update() {
-        this.render();
-        requestAnimationFrame(this.update.bind(this));
-      }
-    }, {
-      key: "setupEventListeners",
-      value: function setupEventListeners() {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
-      }
-    }, {
-      key: "resizeHandler",
-      value: function resizeHandler() {
-        this.camera.aspect = window.innerWidth / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
-      }
-    }]);
-  }();
 
   var config$1 = {
     name: 'WebGPU',

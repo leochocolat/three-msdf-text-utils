@@ -1,6 +1,7 @@
-declare module "three-msdf-text-utils" {
+declare module "three-msdf-text-utils/webgpu" {
   import { BMFontJSON } from "./bmfont-json";
-  import type * as THREE from "three";
+  import type * as THREE from "three/webgpu";
+  import type { ShaderNodeObject } from "three/tsl";
 
   interface WordWrapOptions {
     width?: number;
@@ -60,46 +61,32 @@ declare module "three-msdf-text-utils" {
     visibleGlyphs: Glyph[];
   }
 
-  export interface MSDFTextMaterialOptions extends THREE.ShaderMaterialParameters {
-    extensions?: {
-      derivatives?: boolean;
-      [k: string]: any;
-    };
-    uniforms?: {
-      // Common
-      uOpacity?: { value: number };
-      uColor?: { value: THREE.Color };
-      uMap?: { value: THREE.Texture | null };
-      // Rendering
-      uThreshold?: { value: number };
-      uAlphaTest?: { value: number };
-      // Stroke
-      uStrokeColor?: { value: THREE.Color };
-      uStrokeOutsetWidth?: { value: number };
-      uStrokeInsetWidth?: { value: number };
-    };
+  export interface MSDFTextNodeMaterialOptions {
+    map: THREE.Texture;
+    transparent?: boolean;
+    alphaTest?: number;
+    opacity?: number;
+    color?: THREE.ColorRepresentation;
+    isSmooth?: number;
+    threshold?: number;
+    strokeColor?: THREE.ColorRepresentation;
+    strokeOutsetWidth?: number;
+    strokeInsetWidth?: number;
   }
 
-  export class MSDFTextMaterial extends THREE.ShaderMaterial {
-    constructor(options?: MSDFTextMaterialOptions);
+  export class MSDFTextNodeMaterial extends THREE.NodeMaterial {
+    constructor(options?: MSDFTextNodeMaterialOptions);
+    map: THREE.Texture;
+    transparent: boolean;
+    alphaTest: number;
+    opacity: number;
+    color: THREE.Color;
+    isSmooth: number;
+    threshold: number;
+    strokeColor: THREE.Color;
+    strokeOutsetWidth: number;
+    strokeInsetWidth: number;
+    colorNode: ShaderNodeObject<any>;
+    opacityNode: ShaderNodeObject<any>;
   }
-
-  export const uniforms: {
-    common: {
-      uOpacity: { value: number };
-      uColor: { value: THREE.Color };
-      uMap: { value: THREE.Texture | null };
-    };
-    rendering: {
-      uThreshold: { value: number };
-      uAlphaTest: { value: number };
-    };
-    strokes: {
-      uStrokeColor: { value: THREE.Color };
-      uStrokeOutsetWidth: { value: number };
-      uStrokeInsetWidth: { value: number };
-    };
-  };
-
-  export function generateMSDF(font: File | Blob, options?: object): Promise<{ atlas: Blob; font: BMFontJSON }>;
 }
