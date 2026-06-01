@@ -483,9 +483,9 @@ generateMSDF('./font.ttf', {
 2. **WASM error** - Verify `wasmUrl` points to the `.wasm` file, not `.js`
 3. **CORS issues** - Worker and WASM files must be served from the same origin or with proper CORS headers
 
-**Random m char in you webgl text?**
+**Random m char in your webgl text?**
 
-Make sure to include a space chat in the charset when generating the bitmap font and atlas.
+Make sure to include a space char in the charset when generating the bitmap font and atlas.
 
 ## Dependencies
 
