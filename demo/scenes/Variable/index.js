@@ -16,6 +16,10 @@ import fragment from './shaders/fragment.glsl';
 // Config
 import config from './config';
 
+const map = (value, inMin, inMax, outMin, outMax) => {
+    return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
+}
+
 export default class Variable {
     constructor() {
         this.canvas = document.querySelector('.js-canvas');
@@ -27,6 +31,8 @@ export default class Variable {
     }
 
     start() {
+        this._fonts = [];
+
         this.setupEventListeners();
         this.setup();
         this.setupText();
@@ -72,46 +78,22 @@ export default class Variable {
 
         Promise.all(promises).then((responses) => {
             const atlases = [];
-            const fonts = [];
 
             for (let i = 0; i < responses.length; i+=2) {
                 const atlas = responses[i];
                 const font = responses[i + 1];
                 atlases.push(atlas);
-                fonts.push(font);
+                this._fonts.push(font);
             }
 
             this.atlases = atlases;
 
             const geometry = new MSDFTextGeometry({
-                text: config.text,
-                font: fonts[0].data,
-                width: 1000,
-                align: 'center',
+                font: this._fonts[0].data,
+                ...config.textObject,
             });
 
-            // Precompute position/uv attributes for each weight.
-            // Glyph packing and metrics differ per weight, so each weight
-            // needs its own positions (quads) and uvs (atlas rects).
-            this.positionAttributes = [];
-            this.uvAttributes = [];
-
-            fonts.forEach((font, index) => {
-                const weightGeometry = index === 0 ? geometry : new MSDFTextGeometry({
-                    text: config.text,
-                    font: font.data,
-                    width: 1000,
-                    align: 'center',
-                });
-
-                this.positionAttributes.push(weightGeometry.getAttribute('position'));
-                this.uvAttributes.push(weightGeometry.getAttribute('uv'));
-
-                // All weights must produce the same glyphs in the same order
-                if (weightGeometry.getAttribute('position').count !== geometry.getAttribute('position').count) {
-                    console.warn(`Variable: vertex count mismatch for weight ${index}, layouts must line-break identically across weights`);
-                }
-            });
+            this.setupVariableAttributes(geometry);
 
             const material = new ShaderMaterial({
                 side: DoubleSide,
@@ -143,13 +125,22 @@ export default class Variable {
 
             const mesh = new Mesh(geometry, material);
             mesh.rotation.x = Math.PI;
-            const scale = 3;
+            const scale = config.settings.scale || 3;
             mesh.position.x = -geometry.layout.width / 2 * scale;
             mesh.position.y = -geometry.layout.height / 2 * scale;
             mesh.scale.set(scale, scale, scale);
             this.scene.add(mesh);
 
             // Debug
+            const textBinding = this.debugger.addBinding(config.textObject, 'text', { title: 'Text' }).on('change', () => { this.updateText(); });
+            
+            textBinding.element.querySelector('input').addEventListener('input', (e) => {
+                config.textObject.text = e.target.value;
+                this.updateText();
+            });
+            
+            this.debugger.addBinding(config.textObject, 'letterSpacing', { title: 'Letter Spacing' }).on('change', () => { this.updateText(); });
+
             const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
             debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
             debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
@@ -158,8 +149,72 @@ export default class Variable {
             debugFolderRendering.addBinding(material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
 
             const debugFolderVariable = this.debugger.addFolder({ title: 'Variable' });
-            debugFolderVariable.addBinding(config.settings, 'weight', { label: 'Weight', min: 200, max: 700, step: 1 }).on('change', () => { this.updateWeight(config.settings.weight); });
+            this._weightBinding = debugFolderVariable.addBinding(config.settings, 'weight', { label: 'Weight', min: 200, max: 700, step: 1, readonly: true });
+
+            // Weight is derived from the text length, sync it on first load
+            this.updateText();
         });
+    }
+
+    setupVariableAttributes(geometry) {
+        // Precompute position/uv attributes for each weight.
+        // Glyph packing and metrics differ per weight, so each weight
+        // needs its own positions (quads) and uvs (atlas rects).
+        this.positionAttributes = [];
+        this.uvAttributes = [];
+
+        this._fonts.forEach((font, index) => {
+            const weightGeometry = index === 0 ? geometry : new MSDFTextGeometry({
+                font: font.data,
+                ...config.textObject
+            });
+
+            this.positionAttributes.push(weightGeometry.getAttribute('position'));
+            this.uvAttributes.push(weightGeometry.getAttribute('uv'));
+
+            // All weights must produce the same glyphs in the same order
+            if (weightGeometry.getAttribute('position').count !== geometry.getAttribute('position').count) {
+                console.warn(`Variable: vertex count mismatch for weight ${index}, layouts must line-break identically across weights`);
+            }
+        });
+    }
+
+    updateText() {
+        this.geometry.update({
+            ...config.textObject
+        });
+
+        this.setupVariableAttributes(this.geometry);
+
+        // The text rebuild invalidates every bound buffer (position/uv/
+        // position2/uv2) and the geometry now holds weight[0] positions.
+        // Force updateWeight to rebind from the fresh attributes even when
+        // the weight (and therefore the segment) hasn't changed.
+        this._segment = -1;
+
+        // Map text length to weight: the more characters, the thinner the text
+        config.settings.weight = this.weightFromTextLength(config.textObject.text.length);
+        this._weightBinding.refresh();
+
+        this.updateWeight(config.settings.weight);
+    }
+
+    /**
+     * Map a character count to a weight, longer strings → thinner.
+     * SHORT_LENGTH and below render at the boldest weight, LONG_LENGTH and
+     * above at the thinnest, linearly interpolated in between.
+     */
+    weightFromTextLength(length) {
+        const SHORT_LENGTH = 1;
+        const LONG_LENGTH = 10;
+        const MIN_WEIGHT = 200; // thinnest (extra-light)
+        const MAX_WEIGHT = 700; // boldest (bold)
+
+        let mappedWeight = map(length, SHORT_LENGTH, LONG_LENGTH, MAX_WEIGHT, MIN_WEIGHT);;
+        mappedWeight = Math.min(mappedWeight, MAX_WEIGHT);
+        mappedWeight = Math.max(mappedWeight, MIN_WEIGHT);
+
+        return mappedWeight;
     }
 
     /**

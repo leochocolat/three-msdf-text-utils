@@ -81,7 +81,7 @@ void main() {
     // Output: Common
     vec4 filledFragColor = vec4(uColor, uOpacity * alpha);
 
-    // gl_FragColor = filledFragColor;
+    gl_FragColor = filledFragColor;
 
     // Letter by letter
     // gl_FragColor = filledFragColor * ((vLetterIndex + 1.0) / uLettersTotal);
@@ -93,7 +93,7 @@ void main() {
     // gl_FragColor = filledFragColor * ((vWordIndex + 1.0) / uWordsTotal);
 
     // Letter by letter per line
-    gl_FragColor = filledFragColor * ((vLineLetterIndex + 1.0) / vLineLettersTotal);
+    // gl_FragColor = filledFragColor * ((vLineLetterIndex + 1.0) / vLineLettersTotal);
 
     // Word by word per line
     // gl_FragColor = filledFragColor * ((vLineWordIndex + 1.0) / vLineWordsTotal);

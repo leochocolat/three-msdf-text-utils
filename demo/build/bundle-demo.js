@@ -25637,17 +25637,26 @@ void main() {
 
   var vertex$2 = "#define GLSLIFY 1\nattribute vec2 layoutUv;attribute vec2 position2;attribute vec2 uv2;attribute float lineIndex;attribute float lineLettersTotal;attribute float lineLetterIndex;attribute float lineWordsTotal;attribute float lineWordIndex;attribute float wordIndex;attribute float letterIndex;uniform float uWeight;varying vec2 vUv;varying vec2 vUv2;varying vec2 vLayoutUv;varying vec3 vViewPosition;varying vec3 vNormal;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;void main(){vec3 transformed=vec3(mix(position.xy,position2,uWeight),position.z);vec4 mvPosition=vec4(transformed,1.0);mvPosition=modelViewMatrix*mvPosition;gl_Position=projectionMatrix*mvPosition;vUv=uv;vUv2=uv2;vLayoutUv=layoutUv;vViewPosition=-mvPosition.xyz;vNormal=normal;vLineIndex=lineIndex;vLineLettersTotal=lineLettersTotal;vLineLetterIndex=lineLetterIndex;vLineWordsTotal=lineWordsTotal;vLineWordIndex=lineWordIndex;vWordIndex=wordIndex;vLetterIndex=letterIndex;}"; // eslint-disable-line
 
-  var fragment$2 = "#define GLSLIFY 1\nvarying vec2 vUv;varying vec2 vUv2;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap1;uniform sampler2D uMap2;uniform sampler2D uLettersTotal;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;uniform float uWeight;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s1=texture2D(uMap1,vUv).rgb;vec3 s2=texture2D(uMap2,vUv2).rgb;float d1=median(s1.r,s1.g,s1.b);float d2=median(s2.r,s2.g,s2.b);float sigDist=mix(d1,d2,uWeight)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);gl_FragColor=filledFragColor*((vLineLetterIndex+1.0)/vLineLettersTotal);}"; // eslint-disable-line
+  var fragment$2 = "#define GLSLIFY 1\nvarying vec2 vUv;varying vec2 vUv2;varying float vLineIndex;varying float vLineLettersTotal;varying float vLineLetterIndex;varying float vLineWordsTotal;varying float vLineWordIndex;varying float vWordIndex;varying float vLetterIndex;uniform float uOpacity;uniform float uThreshold;uniform float uAlphaTest;uniform vec3 uColor;uniform sampler2D uMap1;uniform sampler2D uMap2;uniform sampler2D uLettersTotal;uniform vec3 uStrokeColor;uniform float uStrokeOutsetWidth;uniform float uStrokeInsetWidth;uniform float uWeight;float median(float r,float g,float b){return max(min(r,g),min(max(r,g),b));}void main(){vec3 s1=texture2D(uMap1,vUv).rgb;vec3 s2=texture2D(uMap2,vUv2).rgb;float d1=median(s1.r,s1.g,s1.b);float d2=median(s2.r,s2.g,s2.b);float sigDist=mix(d1,d2,uWeight)-0.5;float afwidth=1.4142135623730951/2.0;\n#ifdef IS_SMALL\nfloat alpha=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDist);\n#else\nfloat alpha=clamp(sigDist/fwidth(sigDist)+0.5,0.0,1.0);\n#endif\nfloat sigDistOutset=sigDist+uStrokeOutsetWidth*0.5;float sigDistInset=sigDist-uStrokeInsetWidth*0.5;\n#ifdef IS_SMALL\nfloat outset=smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistOutset);float inset=1.0-smoothstep(uThreshold-afwidth,uThreshold+afwidth,sigDistInset);\n#else\nfloat outset=clamp(sigDistOutset/fwidth(sigDistOutset)+0.5,0.0,1.0);float inset=1.0-clamp(sigDistInset/fwidth(sigDistInset)+0.5,0.0,1.0);\n#endif\nfloat border=outset*inset;if(alpha<uAlphaTest)discard;vec4 filledFragColor=vec4(uColor,uOpacity*alpha);gl_FragColor=filledFragColor;}"; // eslint-disable-line
 
   var config$5 = {
     name: 'Variable',
-    text: 'Variable example',
+    textObject: {
+      text: 'Variable font',
+      align: 'center',
+      width: 1000,
+      letterSpacing: -3
+    },
     settings: {
       color: '#ffffff',
-      weight: 400
+      weight: 400,
+      scale: 12
     }
   };
 
+  var map = function map(value, inMin, inMax, outMin, outMax) {
+    return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+  };
   var Variable = /*#__PURE__*/function () {
     function Variable() {
       _classCallCheck(this, Variable);
@@ -25663,6 +25672,7 @@ void main() {
     return _createClass(Variable, [{
       key: "start",
       value: function start() {
+        this._fonts = [];
         this.setupEventListeners();
         this.setup();
         this.setupText();
@@ -25703,41 +25713,17 @@ void main() {
         this.loadFontAtlas('./fonts/oswald/bold/atlas.png'), this.loadFont('./fonts/oswald/bold/font.json')];
         Promise.all(promises).then(function (responses) {
           var atlases = [];
-          var fonts = [];
           for (var i = 0; i < responses.length; i += 2) {
             var atlas = responses[i];
             var font = responses[i + 1];
             atlases.push(atlas);
-            fonts.push(font);
+            _this._fonts.push(font);
           }
           _this.atlases = atlases;
-          var geometry = new MSDFTextGeometry({
-            text: config$5.text,
-            font: fonts[0].data,
-            width: 1000,
-            align: 'center'
-          });
-
-          // Precompute position/uv attributes for each weight.
-          // Glyph packing and metrics differ per weight, so each weight
-          // needs its own positions (quads) and uvs (atlas rects).
-          _this.positionAttributes = [];
-          _this.uvAttributes = [];
-          fonts.forEach(function (font, index) {
-            var weightGeometry = index === 0 ? geometry : new MSDFTextGeometry({
-              text: config$5.text,
-              font: font.data,
-              width: 1000,
-              align: 'center'
-            });
-            _this.positionAttributes.push(weightGeometry.getAttribute('position'));
-            _this.uvAttributes.push(weightGeometry.getAttribute('uv'));
-
-            // All weights must produce the same glyphs in the same order
-            if (weightGeometry.getAttribute('position').count !== geometry.getAttribute('position').count) {
-              console.warn("Variable: vertex count mismatch for weight ".concat(index, ", layouts must line-break identically across weights"));
-            }
-          });
+          var geometry = new MSDFTextGeometry(_objectSpread2({
+            font: _this._fonts[0].data
+          }, config$5.textObject));
+          _this.setupVariableAttributes(geometry);
           var material = new ShaderMaterial({
             side: DoubleSide,
             transparent: true,
@@ -25765,13 +25751,27 @@ void main() {
           _this.updateWeight(config$5.settings.weight);
           var mesh = new Mesh(geometry, material);
           mesh.rotation.x = Math.PI;
-          var scale = 3;
+          var scale = config$5.settings.scale || 3;
           mesh.position.x = -geometry.layout.width / 2 * scale;
           mesh.position.y = -geometry.layout.height / 2 * scale;
           mesh.scale.set(scale, scale, scale);
           _this.scene.add(mesh);
 
           // Debug
+          var textBinding = _this.debugger.addBinding(config$5.textObject, 'text', {
+            title: 'Text'
+          }).on('change', function () {
+            _this.updateText();
+          });
+          textBinding.element.querySelector('input').addEventListener('input', function (e) {
+            config$5.textObject.text = e.target.value;
+            _this.updateText();
+          });
+          _this.debugger.addBinding(config$5.textObject, 'letterSpacing', {
+            title: 'Letter Spacing'
+          }).on('change', function () {
+            _this.updateText();
+          });
           var debugFolderCommon = _this.debugger.addFolder({
             title: 'Common'
           });
@@ -25796,15 +25796,75 @@ void main() {
           var debugFolderVariable = _this.debugger.addFolder({
             title: 'Variable'
           });
-          debugFolderVariable.addBinding(config$5.settings, 'weight', {
+          _this._weightBinding = debugFolderVariable.addBinding(config$5.settings, 'weight', {
             label: 'Weight',
             min: 200,
             max: 700,
-            step: 1
-          }).on('change', function () {
-            _this.updateWeight(config$5.settings.weight);
+            step: 1,
+            readonly: true
           });
+
+          // Weight is derived from the text length, sync it on first load
+          _this.updateText();
         });
+      }
+    }, {
+      key: "setupVariableAttributes",
+      value: function setupVariableAttributes(geometry) {
+        var _this2 = this;
+        // Precompute position/uv attributes for each weight.
+        // Glyph packing and metrics differ per weight, so each weight
+        // needs its own positions (quads) and uvs (atlas rects).
+        this.positionAttributes = [];
+        this.uvAttributes = [];
+        this._fonts.forEach(function (font, index) {
+          var weightGeometry = index === 0 ? geometry : new MSDFTextGeometry(_objectSpread2({
+            font: font.data
+          }, config$5.textObject));
+          _this2.positionAttributes.push(weightGeometry.getAttribute('position'));
+          _this2.uvAttributes.push(weightGeometry.getAttribute('uv'));
+
+          // All weights must produce the same glyphs in the same order
+          if (weightGeometry.getAttribute('position').count !== geometry.getAttribute('position').count) {
+            console.warn("Variable: vertex count mismatch for weight ".concat(index, ", layouts must line-break identically across weights"));
+          }
+        });
+      }
+    }, {
+      key: "updateText",
+      value: function updateText() {
+        this.geometry.update(_objectSpread2({}, config$5.textObject));
+        this.setupVariableAttributes(this.geometry);
+
+        // The text rebuild invalidates every bound buffer (position/uv/
+        // position2/uv2) and the geometry now holds weight[0] positions.
+        // Force updateWeight to rebind from the fresh attributes even when
+        // the weight (and therefore the segment) hasn't changed.
+        this._segment = -1;
+
+        // Map text length to weight: the more characters, the thinner the text
+        config$5.settings.weight = this.weightFromTextLength(config$5.textObject.text.length);
+        this._weightBinding.refresh();
+        this.updateWeight(config$5.settings.weight);
+      }
+
+      /**
+       * Map a character count to a weight, longer strings → thinner.
+       * SHORT_LENGTH and below render at the boldest weight, LONG_LENGTH and
+       * above at the thinnest, linearly interpolated in between.
+       */
+    }, {
+      key: "weightFromTextLength",
+      value: function weightFromTextLength(length) {
+        var SHORT_LENGTH = 1;
+        var LONG_LENGTH = 10;
+        var MIN_WEIGHT = 200; // thinnest (extra-light)
+        var MAX_WEIGHT = 700; // boldest (bold)
+
+        var mappedWeight = map(length, SHORT_LENGTH, LONG_LENGTH, MAX_WEIGHT, MIN_WEIGHT);
+        mappedWeight = Math.min(mappedWeight, MAX_WEIGHT);
+        mappedWeight = Math.max(mappedWeight, MIN_WEIGHT);
+        return mappedWeight;
       }
 
       /**
