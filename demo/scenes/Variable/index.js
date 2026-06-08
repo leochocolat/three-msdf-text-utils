@@ -20,6 +20,22 @@ const map = (value, inMin, inMax, outMin, outMax) => {
     return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
 }
 
+// Weight instances, thinnest → boldest. Order matters: adjacent entries are
+// the pairs the GPU interpolates between. `weight` is the CSS-like numeric
+// weight used by the UI and the text-length mapping.
+const FONT_DIR = './fonts/oswald';
+const FONT_WEIGHTS = [
+    { name: 'extra-light', weight: 200 },
+    { name: 'light', weight: 300 },
+    { name: 'regular', weight: 400 },
+    { name: 'medium', weight: 500 },
+    { name: 'semi-bold', weight: 600 },
+    { name: 'bold', weight: 700 },
+];
+
+const MIN_WEIGHT = FONT_WEIGHTS[0].weight; // thinnest
+const MAX_WEIGHT = FONT_WEIGHTS[FONT_WEIGHTS.length - 1].weight; // boldest
+
 export default class Variable {
     constructor() {
         this.canvas = document.querySelector('.js-canvas');
@@ -55,105 +71,120 @@ export default class Variable {
     }
 
     setupText() {
-        const promises = [
-            // Extra Light
-            this.loadFontAtlas('./fonts/oswald/extra-light/atlas.png'),
-            this.loadFont('./fonts/oswald/extra-light/font.json'),
-            // Light
-            this.loadFontAtlas('./fonts/oswald/light/atlas.png'),
-            this.loadFont('./fonts/oswald/light/font.json'),
-            // Regular
-            this.loadFontAtlas('./fonts/oswald/regular/atlas.png'),
-            this.loadFont('./fonts/oswald/regular/font.json'),
-            // Medium
-            this.loadFontAtlas('./fonts/oswald/medium/atlas.png'),
-            this.loadFont('./fonts/oswald/medium/font.json'),
-            // Semi-bold
-            this.loadFontAtlas('./fonts/oswald/semi-bold/atlas.png'),
-            this.loadFont('./fonts/oswald/semi-bold/font.json'),
-            // Bold
-            this.loadFontAtlas('./fonts/oswald/bold/atlas.png'),
-            this.loadFont('./fonts/oswald/bold/font.json'),
-        ];
-
-        Promise.all(promises).then((responses) => {
-            const atlases = [];
-
-            for (let i = 0; i < responses.length; i+=2) {
-                const atlas = responses[i];
-                const font = responses[i + 1];
-                atlases.push(atlas);
-                this._fonts.push(font);
-            }
-
-            this.atlases = atlases;
-
-            const geometry = new MSDFTextGeometry({
-                font: this._fonts[0].data,
-                ...config.textObject,
-            });
-
-            this.setupVariableAttributes(geometry);
-
-            const material = new ShaderMaterial({
-                side: DoubleSide,
-                transparent: true,
-                extensions: {
-                    derivatives: true,
-                },
-                uniforms: {
-                    // Common
-                    ...uniforms.common,
-                    // Rendering
-                    ...uniforms.rendering,
-                    // Strokes
-                    ...uniforms.strokes,
-
-                    // Variable weight: two adjacent weights, GPU mixes between them
-                    uMap1: { value: atlases[0] },
-                    uMap2: { value: atlases[1] },
-                    uWeight: { value: 0 },
-                },
-                vertexShader: vertex,
-                fragmentShader: fragment,
-            });
-
-            this.geometry = geometry;
-            this.material = material;
-            this._segment = -1;
-            this.updateWeight(config.settings.weight);
-
-            const mesh = new Mesh(geometry, material);
-            mesh.rotation.x = Math.PI;
-            const scale = config.settings.scale || 3;
-            mesh.position.x = -geometry.layout.width / 2 * scale;
-            mesh.position.y = -geometry.layout.height / 2 * scale;
-            mesh.scale.set(scale, scale, scale);
-            this.scene.add(mesh);
-
-            // Debug
-            const textBinding = this.debugger.addBinding(config.textObject, 'text', { title: 'Text' }).on('change', () => { this.updateText(); });
-            
-            textBinding.element.querySelector('input').addEventListener('input', (e) => {
-                config.textObject.text = e.target.value;
-                this.updateText();
-            });
-            
-            this.debugger.addBinding(config.textObject, 'letterSpacing', { title: 'Letter Spacing' }).on('change', () => { this.updateText(); });
-
-            const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
-            debugFolderCommon.addBinding(material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
-            debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { material.uniforms.uColor.value.set(config.settings.color); });
-
-            const debugFolderRendering = this.debugger.addFolder({ title: 'Rendering' });
-            debugFolderRendering.addBinding(material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
-
-            const debugFolderVariable = this.debugger.addFolder({ title: 'Variable' });
-            this._weightBinding = debugFolderVariable.addBinding(config.settings, 'weight', { label: 'Weight', min: 200, max: 700, step: 1, readonly: true });
+        this.loadFonts().then((responses) => {
+            this.parseFonts(responses);
+            this.createMesh();
+            this.setupDebug();
 
             // Weight is derived from the text length, sync it on first load
             this.updateText();
         });
+    }
+
+    /**
+     * Loading
+     */
+    loadFonts() {
+        const promises = [];
+
+        FONT_WEIGHTS.forEach(({ name }) => {
+            promises.push(this.loadFontAtlas(`${FONT_DIR}/${name}/atlas.png`));
+            promises.push(this.loadFont(`${FONT_DIR}/${name}/font.json`));
+        });
+
+        return Promise.all(promises);
+    }
+
+    parseFonts(responses) {
+        // Responses are interleaved [atlas, font, atlas, font, ...]
+        this.atlases = [];
+
+        for (let i = 0; i < responses.length; i += 2) {
+            this.atlases.push(responses[i]);
+            this._fonts.push(responses[i + 1]);
+        }
+    }
+
+    /**
+     * Mesh
+     */
+    createMesh() {
+        this.geometry = this.createGeometry();
+        this.material = this.createMaterial();
+
+        this._segment = -1;
+        this.updateWeight(config.settings.weight);
+
+        const mesh = new Mesh(this.geometry, this.material);
+        mesh.rotation.x = Math.PI;
+
+        const scale = config.settings.scale || 3;
+        mesh.position.x = -this.geometry.layout.width / 2 * scale;
+        mesh.position.y = -this.geometry.layout.height / 2 * scale;
+        mesh.scale.set(scale, scale, scale);
+
+        this.scene.add(mesh);
+        this.mesh = mesh;
+    }
+
+    createGeometry() {
+        const geometry = new MSDFTextGeometry({
+            font: this._fonts[0].data,
+            ...config.textObject,
+        });
+
+        this.setupVariableAttributes(geometry);
+
+        return geometry;
+    }
+
+    createMaterial() {
+        return new ShaderMaterial({
+            side: DoubleSide,
+            transparent: true,
+            extensions: {
+                derivatives: true,
+            },
+            uniforms: {
+                // Common
+                ...uniforms.common,
+                // Rendering
+                ...uniforms.rendering,
+                // Strokes
+                ...uniforms.strokes,
+
+                // Variable weight: two adjacent weights, GPU mixes between them
+                uMap1: { value: this.atlases[0] },
+                uMap2: { value: this.atlases[1] },
+                uWeight: { value: 0 },
+            },
+            vertexShader: vertex,
+            fragmentShader: fragment,
+        });
+    }
+
+    /**
+     * Debug
+     */
+    setupDebug() {
+        const textBinding = this.debugger.addBinding(config.textObject, 'text', { title: 'Text' }).on('change', () => { this.updateText(); });
+
+        textBinding.element.querySelector('input').addEventListener('input', (e) => {
+            config.textObject.text = e.target.value;
+            this.updateText();
+        });
+
+        this.debugger.addBinding(config.textObject, 'letterSpacing', { title: 'Letter Spacing' }).on('change', () => { this.updateText(); });
+
+        const debugFolderCommon = this.debugger.addFolder({ title: 'Common' });
+        debugFolderCommon.addBinding(this.material.uniforms.uOpacity, 'value', { label: 'Opacity', min: 0, max: 1 });
+        debugFolderCommon.addBinding(config.settings, 'color', { label: 'Color' }).on('change', () => { this.material.uniforms.uColor.value.set(config.settings.color); });
+
+        const debugFolderRendering = this.debugger.addFolder({ title: 'Rendering' });
+        debugFolderRendering.addBinding(this.material.uniforms.uAlphaTest, 'value', { label: 'Alpha test', min: 0, max: 1 });
+
+        const debugFolderVariable = this.debugger.addFolder({ title: 'Variable' });
+        this._weightBinding = debugFolderVariable.addBinding(config.settings, 'weight', { label: 'Weight', min: MIN_WEIGHT, max: MAX_WEIGHT, step: 1, readonly: true });
     }
 
     setupVariableAttributes(geometry) {
@@ -207,14 +238,10 @@ export default class Variable {
     weightFromTextLength(length) {
         const SHORT_LENGTH = 1;
         const LONG_LENGTH = 10;
-        const MIN_WEIGHT = 200; // thinnest (extra-light)
-        const MAX_WEIGHT = 700; // boldest (bold)
 
-        let mappedWeight = map(length, SHORT_LENGTH, LONG_LENGTH, MAX_WEIGHT, MIN_WEIGHT);;
-        mappedWeight = Math.min(mappedWeight, MAX_WEIGHT);
-        mappedWeight = Math.max(mappedWeight, MIN_WEIGHT);
+        const mappedWeight = map(length, SHORT_LENGTH, LONG_LENGTH, MAX_WEIGHT, MIN_WEIGHT);
 
-        return mappedWeight;
+        return Math.min(Math.max(mappedWeight, MIN_WEIGHT), MAX_WEIGHT);
     }
 
     /**
@@ -223,10 +250,18 @@ export default class Variable {
      * attributes; the GPU interpolates between them with uWeight.
      */
     updateWeight(weight) {
-        const t = (weight - 200) / 100;
-        const segment = Math.min(Math.floor(t), this.atlases.length - 2);
+        const clamped = Math.min(Math.max(weight, MIN_WEIGHT), MAX_WEIGHT);
 
-        this.material.uniforms.uWeight.value = t - segment;
+        // Find the segment [i, i + 1] whose weight range contains `weight`
+        let segment = 0;
+        while (segment < FONT_WEIGHTS.length - 2 && clamped > FONT_WEIGHTS[segment + 1].weight) {
+            segment++;
+        }
+
+        // Local blend factor within the segment (handles non-uniform spacing)
+        const lower = FONT_WEIGHTS[segment].weight;
+        const upper = FONT_WEIGHTS[segment + 1].weight;
+        this.material.uniforms.uWeight.value = map(clamped, lower, upper, 0, 1);
 
         // Swap buffers only when crossing into another weight segment
         if (segment !== this._segment) {
