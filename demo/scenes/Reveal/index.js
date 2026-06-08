@@ -87,7 +87,6 @@ export default class Reveal {
             });
 
             material.uniforms.uMap.value = atlas;
-            material.side = DoubleSide;
             material.uniforms.uColor.value = new Color(config.settings.color);
             material.uniforms.uStrokeColor.value = new Color(config.settings.strokeColor);
 
