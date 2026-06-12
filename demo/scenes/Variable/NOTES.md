@@ -167,13 +167,99 @@ varying interpolation is flat — no cross-glyph bleeding.
 
 ---
 
+## Identical packing across weights (how to actually get it)
+
+This is the prerequisite for requirement 3 above (one static `uv` + `DataArrayTexture`).
+It's worth being precise about *why* it's not free and which tool delivers it.
+
+### Why no tool gives it by default
+
+All the common generators run a **tight rect-packer** that places each glyph by its
+actual bitmap size. A bold "A" (30px) is bigger than an extra-light "A" (25px) at the
+same `fontSize`, so when each weight is generated independently **both the position
+and the size** of every glyph's cell differ per weight. That is exactly what forces
+the per-weight `uv`/`uv2` swap in approach C.
+
+- **Our vendored generator** (`@zappar/msdf-generator`, a WASM port of *msdfgen*) packs
+  inside the wasm worker (`generateAtlas`). The only knobs exposed are
+  `font / charset / fontSize / textureSize / fieldRange / padding / fixOverlaps`
+  — **no layout/placement control**. See `src/generateMSDF.js`.
+- **`msdf-bmfont-xml`** uses a shelf/maxrects bin-packer. Also tight, also no
+  shared-layout option. Same problem.
+
+### The mechanism that fixes it: a uniform grid
+
+Force a fixed grid where **cell = f(glyph index)** instead of letting the packer place
+by size. If every weight uses the same charset order, same column count and same cell
+size, glyph *i* lands at the **same rect in every atlas** → UVs become purely
+index-based and **identical across all weights**. Consequences:
+
+- drop `uv2` entirely — one static `uv` is valid for every layer,
+- stack all weights into a `DataArrayTexture` and sample any two layers,
+- which is the precondition for per-character weight.
+
+Cell must be sized for the **worst case** (boldest glyph + field padding) so nothing
+clips; narrow glyphs (`i`, `l`, `.`) then carry empty margin — uniform grids trade
+atlas space for predictable indexing. Fine for a fixed charset.
+
+### Option A — `msdf-atlas-gen` (recommended, native support)
+
+Chlumsky's [`msdf-atlas-gen`](https://github.com/Chlumsky/msdf-atlas-gen) — the C++
+*atlas* companion to msdfgen (note: our zappar generator wraps msdfgen, **not**
+atlas-gen) — has a uniform-grid mode:
+
+- `-uniformgrid` — lay glyphs out in a uniform grid
+- `-uniformcols <N>` — fixed column count
+- `-uniformcell <w> <h>` — fixed cell dimensions
+- `-uniformcellconstraint`, `-uniformorigin` — cell sizing / placement tuning
+
+Generate **all 6 weights with identical** `-uniformcols`, `-uniformcell`, `-pxrange`,
+`-size` and the **same charset string**. Glyph *i* then occupies the same cell in all
+6 atlases. Tradeoff: offline/CLI generation instead of in-browser.
+
+### Option B — repack ourselves (tool-independent)
+
+Keep the existing `src/generateMSDF.js` pipeline and add a post-process repack:
+
+1. Generate each weight's atlas as now.
+2. Composite each glyph into a **fixed cell** on a canvas, cell index = charset index,
+   centered.
+3. Rewrite each `font.json`'s `chars[i].x/y/width/height` to the fixed cell rect
+   (identical numbers across all weights).
+
+Byte-identical UV layout because *we* control placement — maximum determinism, no
+dependency on packer behaviour. More code, stays in-browser.
+
+### Option C — `msdf-bmfont-xml`
+
+Tight packer, no shared-layout option. Not worth switching to for this.
+
+### Important: packing ≠ layout
+
+Identical packing solves the **texture/UV side only**. Advances and metrics still
+differ per weight, so the per-character *spacing* problem (Rule 3 / requirement 4 —
+the prefix-sum of advances) is untouched. Uniform packing lets us collapse 6 atlases
+→ 1 array texture and delete `uv2`; it does **not** by itself give per-character
+spacing.
+
+**Recommendation:** Option A if we move atlas generation offline (cleanest, least
+code, battle-tested); Option B if everything must stay in the in-browser pipeline.
+
+Sources: [msdf-atlas-gen README](https://github.com/Chlumsky/msdf-atlas-gen/blob/master/README.md),
+[main.cpp flag definitions](https://github.com/Chlumsky/msdf-atlas-gen/blob/master/msdf-atlas-gen/main.cpp).
+
+---
+
 ## Status / next steps
 
 - [x] Demo scene loads 6 Oswald weights + atlases (`demo/scenes/Variable/`)
 - [x] Distance-mix fragment shader (Rule 1)
 - [x] Per-weight UV + position attributes, pair-swap architecture (approach C)
 - [x] Global weight slider (200–700) in tweakpane
-- [ ] Verify `msdf-generator` can emit identically-packed (uniform grid) atlases
+- [x] Verify `msdf-generator` can emit identically-packed atlases → **no**, no layout
+      control; use `msdf-atlas-gen -uniformgrid` (offline) or repack ourselves
+      (see "Identical packing across weights")
+- [ ] Produce uniform-grid atlases for all 6 weights (Option A or B)
 - [ ] Pack the 6 atlases into a `DataArrayTexture`
 - [ ] Replace `uWeight` uniform with a per-glyph `weight` attribute
 - [ ] Decide layout strategy (fixed metrics vs CPU re-layout vs GPU advances)
